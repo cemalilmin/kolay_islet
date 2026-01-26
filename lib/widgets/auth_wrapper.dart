@@ -101,7 +101,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
     }
 
     if (_isLoggedIn) {
-      return MainLayout(key: ValueKey('main_$_rebuildKey'));
+      return MainLayout(key: mainLayoutKey);
     } else {
       return const LoginScreen();
     }

@@ -5,6 +5,7 @@ import '../models/booking_model.dart';
 import '../models/category_model.dart';
 import '../models/maintenance_event_model.dart';
 import 'supabase_service.dart';
+import 'notification_service.dart';
 
 // Transaction Model
 class TransactionModel {
@@ -91,6 +92,10 @@ class DataService {
         _loadTransactions(),
         _loadCategories(),
       ]);
+      
+      // Sort transactions by date (newest first)
+      transactions.sort((a, b) => b.date.compareTo(a.date));
+      
       print('DEBUG: All data loaded successfully');
     } catch (e) {
       print('DEBUG: Error loading user data: $e');
@@ -129,12 +134,22 @@ class DataService {
         }
       }
       
-      // Fallback for "(Kalan Ödeme)" transactions without image
+      // Fallback: If no image from Supabase, try to find from product name
       final productName = tx['product_name'] ?? '';
-      if (productImageUrl == null && productName.contains('(Kalan Ödeme)')) {
-        // Try to find image from original product name
-        final originalName = productName.replaceAll(' (Kalan Ödeme)', '');
-        final matchingProduct = dresses.where((d) => d.title == originalName).firstOrNull;
+      if (productImageUrl == null) {
+        // Clean product name (remove suffixes like "(Kalan Ödeme)")
+        String searchName = productName;
+        if (searchName.contains('(Kalan Ödeme)')) {
+          searchName = searchName.replaceAll(' (Kalan Ödeme)', '');
+        }
+        
+        // Try to find matching product by name (case-insensitive)
+        final matchingProduct = dresses.where((d) => 
+          d.title.toLowerCase() == searchName.toLowerCase() ||
+          d.title.toLowerCase().contains(searchName.toLowerCase()) ||
+          searchName.toLowerCase().contains(d.title.toLowerCase())
+        ).firstOrNull;
+        
         if (matchingProduct != null && matchingProduct.images.isNotEmpty) {
           productImageUrl = matchingProduct.images.first;
         }
@@ -408,21 +423,19 @@ class DataService {
         
         // 3. Optionally create maintenance event for cleaning period
         // This is now controlled by addToCleaningQueue parameter
+        // End date is set far in future - user must manually mark as ready
         if (addToCleaningQueue && tx.productId != null) {
-          const int cleaningDays = 2; // Default cleaning duration
-          if (cleaningDays > 0) {
-            final today = DateTime.now();
-            final cleaningStart = DateTime(today.year, today.month, today.day);
-            final cleaningEnd = cleaningStart.add(Duration(days: cleaningDays - 1));
-            
-            await addMaintenanceEvent(
-              productId: tx.productId!,
-              startDate: cleaningStart,
-              endDate: cleaningEnd,
-              description: 'Yıkama/Bakım (${tx.customerName ?? "Müşteri"} teslimi)',
-            );
-            print('DEBUG: Created cleaning maintenance for $cleaningDays days');
-          }
+          final today = DateTime.now();
+          final cleaningStart = DateTime(today.year, today.month, today.day);
+          final farFutureDate = cleaningStart.add(const Duration(days: 365)); // 1 year
+          
+          await addMaintenanceEvent(
+            productId: tx.productId!,
+            startDate: cleaningStart,
+            endDate: farFutureDate,
+            description: 'Yıkama/Bakım (${tx.customerName ?? "Müşteri"} teslimi)',
+          );
+          print('DEBUG: Created cleaning maintenance (indefinite until marked ready)');
         }
       }
       
@@ -823,6 +836,16 @@ class DataService {
       );
       
       await refreshBookings();
+      
+      // Schedule notifications for this booking
+      if (bookingId != null) {
+        await NotificationService().scheduleBookingNotifications(
+          bookingId: bookingId,
+          productName: dressTitle,
+          rentalDate: startDate,
+        );
+      }
+      
       return bookingId;
     } catch (e) {
       print('Error creating booking: $e');
@@ -845,6 +868,10 @@ class DataService {
     try {
       await _supabase.updateBookingStatus(bookingId, 'cancelled');
       await refreshBookings();
+      
+      // Cancel scheduled notifications
+      await NotificationService().cancelBookingNotifications(bookingId);
+      
       return true;
     } catch (e) {
       print('Error cancelling booking: $e');

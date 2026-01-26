@@ -229,13 +229,13 @@ class _MaintenancePageState extends State<MaintenancePage> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: statusColor.withOpacity(0.1),
+                      color: Colors.orange.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    child: Text(
-                      statusText,
+                    child: const Text(
+                      'Bakımda',
                       style: TextStyle(
-                        color: statusColor,
+                        color: Colors.orange,
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
                       ),

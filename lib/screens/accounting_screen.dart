@@ -19,27 +19,62 @@ class _AccountingScreenState extends State<AccountingScreen> {
   String _selectedPeriod = 'Bu Ay';
   final List<String> _periods = ['Bugün', 'Bu Hafta', 'Bu Ay', 'Bu Yıl', 'Tüm Zamanlar'];
 
-  // Filtered transactions based on selected period
+  // Transaction type filters (multi-select)
+  Set<String> _activeFilters = {};
+  
+  // Filter options
+  static const Map<String, String> _filterLabels = {
+    'kiralama': 'Kiralama',
+    'satis': 'Satış',
+    'kalan_odeme': 'Kalan Ödeme',
+    'gider': 'Gider',
+    'gelir_ekle': 'Gelir Ekle',
+    'iptal': 'İptal Edilenler',
+  };
+
+  // Filtered transactions based on selected period and type filters
   List<TransactionModel> get _filteredTransactions {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     
-    return _dataService.transactions.where((t) {
+    var filtered = _dataService.transactions.where((t) {
+      // Period filter
       switch (_selectedPeriod) {
         case 'Bugün':
-          return t.date.year == now.year && t.date.month == now.month && t.date.day == now.day;
+          if (!(t.date.year == now.year && t.date.month == now.month && t.date.day == now.day)) return false;
+          break;
         case 'Bu Hafta':
           final weekStart = today.subtract(Duration(days: today.weekday - 1));
-          return t.date.isAfter(weekStart.subtract(const Duration(days: 1)));
+          if (!t.date.isAfter(weekStart.subtract(const Duration(days: 1)))) return false;
+          break;
         case 'Bu Ay':
-          return t.date.year == now.year && t.date.month == now.month;
+          if (!(t.date.year == now.year && t.date.month == now.month)) return false;
+          break;
         case 'Bu Yıl':
-          return t.date.year == now.year;
+          if (!(t.date.year == now.year)) return false;
+          break;
         case 'Tüm Zamanlar':
         default:
-          return true;
+          break;
       }
+      
+      // Type filter (if any active)
+      if (_activeFilters.isNotEmpty) {
+        if (_activeFilters.contains('kiralama') && t.type == 'kiralama' && !t.productName.contains('(Kalan Ödeme)') && t.status != 'cancelled') return true;
+        if (_activeFilters.contains('satis') && t.type == 'satis' && t.status != 'cancelled') return true;
+        if (_activeFilters.contains('kalan_odeme') && t.productName.contains('(Kalan Ödeme)')) return true;
+        if (_activeFilters.contains('gider') && t.type == 'gider') return true;
+        if (_activeFilters.contains('gelir_ekle') && t.type == 'gelir_ekle') return true;
+        if (_activeFilters.contains('iptal') && t.status == 'cancelled') return true;
+        return false;
+      }
+      
+      return true;
     }).toList();
+    
+    // Sort by date (newest first)
+    filtered.sort((a, b) => b.date.compareTo(a.date));
+    return filtered;
   }
 
   // Dynamic data based on filtered transactions
@@ -1211,6 +1246,7 @@ class _AccountingScreenState extends State<AccountingScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Header with title
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
@@ -1232,7 +1268,7 @@ class _AccountingScreenState extends State<AccountingScreen> {
               const Icon(Icons.receipt_long, color: Colors.white, size: 16),
               const SizedBox(width: 8),
               const Text(
-                'Son İşlemler',
+                'İşlemler',
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
@@ -1242,7 +1278,97 @@ class _AccountingScreenState extends State<AccountingScreen> {
             ],
           ),
         ),
+        const SizedBox(height: 12),
+        
+        // Filter chips
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              // Clear all button (only if filters active)
+              if (_activeFilters.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: GestureDetector(
+                    onTap: () => setState(() => _activeFilters.clear()),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.clear_all, size: 14, color: Colors.grey[700]),
+                          const SizedBox(width: 4),
+                          Text('Temizle', style: TextStyle(fontSize: 12, color: Colors.grey[700])),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              // Filter chips
+              ..._filterLabels.entries.map((entry) {
+                final isActive = _activeFilters.contains(entry.key);
+                Color chipColor;
+                switch (entry.key) {
+                  case 'kiralama': chipColor = AppColors.chartKiralama; break;
+                  case 'satis': chipColor = AppColors.chartSatis; break;
+                  case 'kalan_odeme': chipColor = Colors.amber[700]!; break;
+                  case 'gider': chipColor = Colors.red[400]!; break;
+                  case 'gelir_ekle': chipColor = Colors.green; break;
+                  case 'iptal': chipColor = Colors.grey[600]!; break;
+                  default: chipColor = Colors.grey;
+                }
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        if (isActive) {
+                          _activeFilters.remove(entry.key);
+                        } else {
+                          _activeFilters.add(entry.key);
+                        }
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: isActive ? chipColor : Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: isActive ? chipColor : Colors.grey[300]!),
+                        boxShadow: isActive ? [
+                          BoxShadow(color: chipColor.withOpacity(0.3), blurRadius: 4, offset: const Offset(0, 2)),
+                        ] : null,
+                      ),
+                      child: Text(
+                        entry.value,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+                          color: isActive ? Colors.white : Colors.grey[700],
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }),
+            ],
+          ),
+        ),
         const SizedBox(height: 16),
+
+        // Transaction count
+        if (_filteredTransactions.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(
+              '${_filteredTransactions.length} işlem',
+              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+            ),
+          ),
 
         if (_filteredTransactions.isEmpty)
           Container(
@@ -1257,14 +1383,16 @@ class _AccountingScreenState extends State<AccountingScreen> {
                   Icon(Icons.receipt_long, size: 48, color: AppColors.textLight),
                   const SizedBox(height: 12),
                   Text(
-                    'Henüz işlem yok',
+                    _activeFilters.isNotEmpty ? 'Bu filtreye uygun işlem yok' : 'Henüz işlem yok',
                     style: AppTextStyles.titleSmall.copyWith(
                       color: AppColors.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Kiralama veya satış yaptığınızda\nburada görünecek',
+                    _activeFilters.isNotEmpty 
+                        ? 'Farklı bir filtre seçin veya filtreleri temizleyin'
+                        : 'Kiralama veya satış yaptığınızda\nburada görünecek',
                     textAlign: TextAlign.center,
                     style: AppTextStyles.bodySmall.copyWith(
                       color: AppColors.textLight,
@@ -1275,37 +1403,51 @@ class _AccountingScreenState extends State<AccountingScreen> {
             ),
           )
         else
-          ..._filteredTransactions.take(10).map((tx) {
+          ..._filteredTransactions.map((tx) {
             const turkishMonths = [
               'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
               'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
             ];
             final now = DateTime.now();
+            
+            // Format time as HH:MM
+            final timeStr = '${tx.date.hour.toString().padLeft(2, '0')}:${tx.date.minute.toString().padLeft(2, '0')}';
+            
             String dateStr;
             if (tx.date.day == now.day && tx.date.month == now.month && tx.date.year == now.year) {
-              dateStr = 'Bugün';
+              dateStr = 'Bugün $timeStr';
             } else if (tx.date.day == now.day - 1 && tx.date.month == now.month && tx.date.year == now.year) {
-              dateStr = 'Dün';
+              dateStr = 'Dün $timeStr';
             } else {
-              dateStr = '${tx.date.day} ${turkishMonths[tx.date.month - 1]}';
+              dateStr = '${tx.date.day} ${turkishMonths[tx.date.month - 1]} $timeStr';
             }
             
             String typeLabel;
             String amountPrefix;
             if (tx.type == 'kiralama') {
-              typeLabel = 'Kiralama';
+              typeLabel = tx.productName.contains('(Kalan Ödeme)') ? 'Kalan Ödeme' : 'Kiralama';
               amountPrefix = '+';
             } else if (tx.type == 'satis') {
               typeLabel = 'Satış';
+              amountPrefix = '+';
+            } else if (tx.type == 'gelir_ekle') {
+              typeLabel = 'Gelir';
               amountPrefix = '+';
             } else {
               typeLabel = 'Gider';
               amountPrefix = '-';
             }
             
+            // Clean product name (remove duplicate type info)
+            String cleanProductName = tx.productName;
+            if (cleanProductName.contains(' (Kalan Ödeme)')) {
+              cleanProductName = cleanProductName.replaceAll(' (Kalan Ödeme)', '');
+            }
+            
             return _buildTransactionItemWithDelete(
               tx,
-              '${tx.productName} - $typeLabel',
+              cleanProductName,
+              typeLabel,
               '$amountPrefix${tx.amount.toInt()} TL',
               dateStr,
             );
@@ -1400,32 +1542,48 @@ class _AccountingScreenState extends State<AccountingScreen> {
     );
   }
 
-  Widget _buildTransactionItemWithDelete(TransactionModel tx, String title, String amount, String date) {
+  Widget _buildTransactionItemWithDelete(TransactionModel tx, String productName, String typeLabel, String amount, String date) {
     Color iconBgColor;
     IconData iconData;
     Color amountColor;
+    Color typeBadgeColor;
     
     if (tx.type == 'kiralama') {
       iconBgColor = AppColors.chartKiralama;
       iconData = Icons.calendar_today;
       amountColor = AppColors.success;
+      typeBadgeColor = productName.contains('Kalan') ? Colors.amber[700]! : AppColors.chartKiralama;
     } else if (tx.type == 'satis') {
       iconBgColor = AppColors.chartSatis;
       iconData = Icons.sell;
       amountColor = AppColors.success;
+      typeBadgeColor = AppColors.chartSatis;
+    } else if (tx.type == 'gelir_ekle') {
+      iconBgColor = Colors.green;
+      iconData = Icons.add_circle_outline;
+      amountColor = AppColors.success;
+      typeBadgeColor = Colors.green;
     } else {
       iconBgColor = Colors.orange;
       iconData = Icons.receipt_long;
       amountColor = Colors.red;
+      typeBadgeColor = Colors.orange;
+    }
+    
+    // Check if cancelled
+    final isCancelled = tx.status == 'cancelled';
+    if (isCancelled) {
+      typeBadgeColor = Colors.grey[600]!;
+      amountColor = Colors.grey[500]!;
     }
     
     return GestureDetector(
       onLongPress: () => _showDeleteConfirmation(tx),
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isCancelled ? Colors.grey[50] : Colors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -1453,31 +1611,61 @@ class _AccountingScreenState extends State<AccountingScreen> {
                     ),
                     child: Icon(iconData, color: Colors.white, size: 20),
                   ),
-            const SizedBox(width: 14),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: AppTextStyles.titleSmall.copyWith(fontWeight: FontWeight.w600),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  // Product name row
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          productName,
+                          style: AppTextStyles.titleSmall.copyWith(
+                            fontWeight: FontWeight.w600,
+                            decoration: isCancelled ? TextDecoration.lineThrough : null,
+                            color: isCancelled ? Colors.grey[500] : null,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      // Type badge
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: typeBadgeColor.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          isCancelled ? 'İptal' : typeLabel,
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: typeBadgeColor,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
+                  const SizedBox(height: 4),
+                  // Date and customer row
                   Row(
                     children: [
                       Text(
                         date,
-                        style: AppTextStyles.labelSmall.copyWith(color: AppColors.textSecondary),
+                        style: AppTextStyles.labelSmall.copyWith(color: AppColors.textSecondary, fontSize: 11),
                       ),
-                      if (tx.customerName != null) ...[
+                      if (tx.customerName != null && tx.customerName!.isNotEmpty) ...[
                         const SizedBox(width: 8),
-                        Icon(Icons.person_outline, size: 12, color: AppColors.textSecondary),
-                        const SizedBox(width: 4),
+                        Icon(Icons.person_outline, size: 11, color: AppColors.textSecondary),
+                        const SizedBox(width: 3),
                         Flexible(
                           child: Text(
                             tx.customerName!,
-                            style: AppTextStyles.labelSmall.copyWith(color: AppColors.textSecondary),
+                            style: AppTextStyles.labelSmall.copyWith(color: AppColors.textSecondary, fontSize: 11),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -1488,24 +1676,15 @@ class _AccountingScreenState extends State<AccountingScreen> {
                 ],
               ),
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  amount,
-                  style: AppTextStyles.titleMedium.copyWith(
-                    color: amountColor,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  'Basılı tut: sil',
-                  style: AppTextStyles.labelSmall.copyWith(
-                    color: AppColors.textLight,
-                    fontSize: 9,
-                  ),
-                ),
-              ],
+            const SizedBox(width: 8),
+            // Amount
+            Text(
+              amount,
+              style: AppTextStyles.titleMedium.copyWith(
+                color: amountColor,
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+              ),
             ),
           ],
         ),

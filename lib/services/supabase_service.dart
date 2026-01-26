@@ -730,14 +730,17 @@ class SupabaseService {
     return result.hasAvailable || result.canOverride;
   }
 
-  // One-tap maintenance - uses duration from Settings
+  // One-tap maintenance - indefinite until marked as ready (1 year max)
   Future<MaintenanceEvent?> quickAddMaintenance(String productId, {String? description}) async {
     final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    // Set end date far in future - user must manually mark as ready
+    final farFutureDate = today.add(const Duration(days: 365));
     return addMaintenanceEvent(
       productId: productId,
-      startDate: now,
-      endDate: now.add(kCleaningDuration), // Uses SettingsService
-      description: description ?? 'Temizlik',
+      startDate: today,
+      endDate: farFutureDate,
+      description: description ?? 'Temizlik/Bakım',
     );
   }
 

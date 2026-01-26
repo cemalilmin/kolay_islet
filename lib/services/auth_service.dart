@@ -150,4 +150,47 @@ class AuthService {
       rethrow;
     }
   }
+
+  // Delete user account - required for App Store & Play Store compliance
+  Future<void> deleteAccount() async {
+    try {
+      if (currentUser == null) {
+        throw Exception('Kullanıcı oturumu bulunamadı');
+      }
+
+      final userId = currentUser!.id;
+
+      // Delete user data from all related tables
+      // Order matters due to foreign key constraints
+      
+      // 1. Delete bookings
+      await _client.from('bookings').delete().eq('user_id', userId);
+      
+      // 2. Delete transactions  
+      await _client.from('transactions').delete().eq('user_id', userId);
+      
+      // 3. Delete maintenance events
+      await _client.from('maintenance_events').delete().eq('user_id', userId);
+      
+      // 4. Delete products
+      await _client.from('products').delete().eq('user_id', userId);
+      
+      // 5. Delete categories
+      await _client.from('categories').delete().eq('user_id', userId);
+      
+      // 6. Delete profile
+      await _client.from('profiles').delete().eq('id', userId);
+      
+      // 7. Clear local cache
+      DataService().clearData();
+      _cachedProfile = null;
+      
+      // 8. Sign out (this will also handle auth state change)
+      await _client.auth.signOut();
+      
+    } catch (e) {
+      print('Delete account error: $e');
+      rethrow;
+    }
+  }
 }

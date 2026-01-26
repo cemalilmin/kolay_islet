@@ -51,5 +51,18 @@
 	<string>Ürün fotoğrafı seçmek için galeri erişimi gerekiyor</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Video kaydetmek için mikrofon erişimi gerekiyor</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.cemalilmin.kolayislet</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.cemalilmin.kolayislet</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

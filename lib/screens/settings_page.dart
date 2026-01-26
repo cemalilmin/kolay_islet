@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../config/supabase_config.dart';
 import '../services/settings_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
@@ -94,35 +95,6 @@ class _SettingsPageState extends State<SettingsPage> {
                 await _settings.setCleaningDurationDays(value.round());
                 setState(() {});
               },
-            ),
-          ]),
-
-          const SizedBox(height: 24),
-
-          // Receipt Section
-          _buildSectionHeader('📄 Dijital Fiş', Icons.receipt_long),
-          const SizedBox(height: 12),
-          _buildSettingsCard([
-            _buildTextFieldTile(
-              title: 'Mağaza Adı',
-              controller: _shopNameController,
-              hint: 'Mağazanızın adı',
-              onChanged: (value) => _settings.setShopName(value),
-            ),
-            const Divider(height: 1),
-            _buildTextFieldTile(
-              title: 'Telefon',
-              controller: _shopPhoneController,
-              hint: '0532 123 45 67',
-              keyboardType: TextInputType.phone,
-              onChanged: (value) => _settings.setShopPhone(value),
-            ),
-            const Divider(height: 1),
-            _buildMultilineFieldTile(
-              title: 'Fiş Uyarı Metni',
-              controller: _disclaimerController,
-              hint: 'Kiralamalar 19:00\'a kadar iade edilmelidir...',
-              onChanged: (value) => _settings.setReceiptDisclaimer(value),
             ),
           ]),
 
@@ -255,7 +227,7 @@ class _SettingsPageState extends State<SettingsPage> {
               subtitle: const Text('Veri toplama ve kullanım politikamız'),
               trailing: Icon(Icons.open_in_new, color: Colors.grey[400]),
               onTap: () async {
-                final url = Uri.parse('https://example.com/privacy'); // TODO: Update with real URL
+                final url = Uri.parse(SupabaseConfig.privacyPolicyUrl);
                 // ignore: deprecated_member_use
                 await launchUrl(url, mode: LaunchMode.externalApplication);
               },

@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../services/data_service.dart';
@@ -409,9 +410,9 @@ class _ProductsScreenState extends State<ProductsScreen> {
               padding: const EdgeInsets.only(bottom: 100),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3,
-                mainAxisSpacing: 12,
-                crossAxisSpacing: 12,
-                childAspectRatio: 0.8,
+                mainAxisSpacing: 16,
+                crossAxisSpacing: 10,
+                childAspectRatio: 0.55,
               ),
               itemCount: products.length + 1, // +1 for add button
               itemBuilder: (context, index) {
@@ -430,26 +431,88 @@ class _ProductsScreenState extends State<ProductsScreen> {
   Widget _buildProductCard(DressModel product) {
     return GestureDetector(
       onTap: () => _showProductOptions(product),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
+      child: Column(
+        children: [
+          // Product Image - with shadow and rounded corners
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: product.images.isNotEmpty
+                      ? _buildProductImage(product.images.first)
+                      : _buildProductPlaceholder(),
+                ),
+              ),
             ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: product.images.isNotEmpty
-              ? _buildProductImage(product.images.first)
-              : _buildProductPlaceholder(),
-        ),
+          ),
+          // Gap between image and name
+          const SizedBox(height: 6),
+          // Product Name - separate box with border and shadow
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            decoration: BoxDecoration(
+              color: const Color(0xFFDDDCDC),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: const Color(0xFF321F20),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFCCCCCC),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                _toTurkishUpperCase(product.title),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                style: GoogleFonts.josefinSans(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF321F20),
+                  letterSpacing: 0.3,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
+  }
+
+  // Turkish uppercase helper
+  String _toTurkishUpperCase(String text) {
+    const turkishLower = 'abcçdefgğhıijklmnoöprsştuüvyz';
+    const turkishUpper = 'ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZ';
+    
+    StringBuffer result = StringBuffer();
+    for (int i = 0; i < text.length; i++) {
+      int index = turkishLower.indexOf(text[i]);
+      if (index != -1) {
+        result.write(turkishUpper[index]);
+      } else {
+        result.write(text[i].toUpperCase());
+      }
+    }
+    return result.toString();
   }
 
   Widget _buildProductImage(String imagePath) {
@@ -524,8 +587,12 @@ class _ProductsScreenState extends State<ProductsScreen> {
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
+      constraints: BoxConstraints(
+        maxWidth: MediaQuery.of(context).size.width,
+      ),
       builder: (context) => StatefulBuilder(
         builder: (context, setModalState) => Container(
+          width: MediaQuery.of(context).size.width,
           padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(context).viewInsets.bottom + 20),
           decoration: const BoxDecoration(
             color: Colors.white,
@@ -534,7 +601,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 // Handle bar
                 Center(
@@ -549,22 +616,38 @@ class _ProductsScreenState extends State<ProductsScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // Title
+                // Title with close button
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFDC2626).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(Icons.checkroom, color: const Color(0xFFDC2626), size: 24),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFDC2626).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(Icons.checkroom, color: const Color(0xFFDC2626), size: 24),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          'Yeni Ürün Ekle',
+                          style: AppTextStyles.headlineSmall.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 12),
-                    Text(
-                      'Yeni Ürün Ekle',
-                      style: AppTextStyles.headlineSmall.copyWith(
-                        fontWeight: FontWeight.bold,
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(Icons.close, color: Colors.grey[600], size: 20),
                       ),
                     ),
                   ],
@@ -577,84 +660,88 @@ class _ProductsScreenState extends State<ProductsScreen> {
                 const SizedBox(height: 8),
                 
                 if (selectedImage == null)
-                  Row(
-                    children: [
-                      // Camera Button
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () async {
-                            final XFile? photo = await picker.pickImage(
-                              source: ImageSource.camera,
-                              imageQuality: 80,
-                            );
-                            if (photo != null) {
-                              setModalState(() {
-                                selectedImage = File(photo.path);
-                              });
-                            }
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 24),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFDC2626).withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: const Color(0xFFDC2626).withOpacity(0.3)),
-                            ),
-                            child: Column(
-                              children: [
-                                Icon(Icons.camera_alt, size: 32, color: const Color(0xFFDC2626)),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Kamera',
-                                  style: AppTextStyles.labelMedium.copyWith(
-                                    color: const Color(0xFFDC2626),
-                                    fontWeight: FontWeight.w600,
+                  IntrinsicHeight(
+                    child: Row(
+                      children: [
+                        // Camera Button
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () async {
+                              final XFile? photo = await picker.pickImage(
+                                source: ImageSource.camera,
+                                imageQuality: 80,
+                              );
+                              if (photo != null) {
+                                setModalState(() {
+                                  selectedImage = File(photo.path);
+                                });
+                              }
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 20),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFDC2626).withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: const Color(0xFFDC2626).withOpacity(0.3)),
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.camera_alt, size: 32, color: const Color(0xFFDC2626)),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Kamera',
+                                    style: AppTextStyles.labelMedium.copyWith(
+                                      color: const Color(0xFFDC2626),
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      // Gallery Button
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () async {
-                            final XFile? photo = await picker.pickImage(
-                              source: ImageSource.gallery,
-                              imageQuality: 80,
-                            );
-                            if (photo != null) {
-                              setModalState(() {
-                                selectedImage = File(photo.path);
-                              });
-                            }
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 24),
-                            decoration: BoxDecoration(
-                              color: AppColors.chartSatis.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: AppColors.chartSatis.withOpacity(0.3)),
-                            ),
-                            child: Column(
-                              children: [
-                                Icon(Icons.photo_library, size: 32, color: AppColors.chartSatis),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Galeri',
-                                  style: AppTextStyles.labelMedium.copyWith(
-                                    color: AppColors.chartSatis,
-                                    fontWeight: FontWeight.w600,
+                        const SizedBox(width: 16),
+                        // Gallery Button
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () async {
+                              final XFile? photo = await picker.pickImage(
+                                source: ImageSource.gallery,
+                                imageQuality: 80,
+                              );
+                              if (photo != null) {
+                                setModalState(() {
+                                  selectedImage = File(photo.path);
+                                });
+                              }
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 20),
+                              decoration: BoxDecoration(
+                                color: AppColors.chartSatis.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: AppColors.chartSatis.withOpacity(0.3)),
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.photo_library, size: 32, color: AppColors.chartSatis),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Galeri',
+                                    style: AppTextStyles.labelMedium.copyWith(
+                                      color: AppColors.chartSatis,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   )
                 else
                   Stack(
@@ -714,42 +801,40 @@ class _ProductsScreenState extends State<ProductsScreen> {
                 // Product Name
                 Text('Ürün Adı *', style: AppTextStyles.labelMedium.copyWith(fontWeight: FontWeight.w600)),
                 const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceVariant,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: TextField(
-                    controller: nameController,
-                    style: AppTextStyles.titleMedium,
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      hintText: 'Ör: Kırmızı Abiye',
+                TextFormField(
+                  controller: nameController,
+                  style: AppTextStyles.titleMedium,
+                  decoration: InputDecoration(
+                    hintText: 'Ör: Kırmızı Abiye',
+                    filled: true,
+                    fillColor: AppColors.surfaceVariant,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
                     ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   ),
                 ),
 
                 const SizedBox(height: 16),
 
                 // Price
-                Text('Günlük Kiralama Fiyatı *', style: AppTextStyles.labelMedium.copyWith(fontWeight: FontWeight.w600)),
+                Text('Günlük Kiralama Fiyatı (Opsiyonel)', style: AppTextStyles.labelMedium.copyWith(fontWeight: FontWeight.w600)),
                 const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceVariant,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: TextField(
-                    controller: priceController,
-                    keyboardType: TextInputType.number,
-                    style: AppTextStyles.titleMedium,
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      hintText: 'Ör: 850',
-                      prefixText: '₺ ',
+                TextFormField(
+                  controller: priceController,
+                  keyboardType: TextInputType.number,
+                  style: AppTextStyles.titleMedium,
+                  decoration: InputDecoration(
+                    hintText: 'Ör: 850',
+                    prefixText: '₺ ',
+                    filled: true,
+                    fillColor: AppColors.surfaceVariant,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
                     ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   ),
                 ),
 
@@ -758,21 +843,20 @@ class _ProductsScreenState extends State<ProductsScreen> {
                 // Sale Price (optional)
                 Text('Satış Fiyatı (Opsiyonel)', style: AppTextStyles.labelMedium.copyWith(fontWeight: FontWeight.w600)),
                 const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceVariant,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: TextField(
-                    controller: salePriceController,
-                    keyboardType: TextInputType.number,
-                    style: AppTextStyles.titleMedium,
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      hintText: 'Ör: 2500 (Satılacaksa)',
-                      prefixText: '₺ ',
+                TextFormField(
+                  controller: salePriceController,
+                  keyboardType: TextInputType.number,
+                  style: AppTextStyles.titleMedium,
+                  decoration: InputDecoration(
+                    hintText: 'Ör: 2500 (Satılacaksa)',
+                    prefixText: '₺ ',
+                    filled: true,
+                    fillColor: AppColors.surfaceVariant,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
                     ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   ),
                 ),
 
@@ -781,20 +865,19 @@ class _ProductsScreenState extends State<ProductsScreen> {
                 // Description (optional)
                 Text('Açıklama (Opsiyonel)', style: AppTextStyles.labelMedium.copyWith(fontWeight: FontWeight.w600)),
                 const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceVariant,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: TextField(
-                    controller: descController,
-                    maxLines: 2,
-                    style: AppTextStyles.titleMedium,
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      hintText: 'Ürün açıklaması...',
+                TextFormField(
+                  controller: descController,
+                  maxLines: 2,
+                  style: AppTextStyles.titleMedium,
+                  decoration: InputDecoration(
+                    hintText: 'Ürün açıklaması...',
+                    filled: true,
+                    fillColor: AppColors.surfaceVariant,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
                     ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   ),
                 ),
 
@@ -803,21 +886,20 @@ class _ProductsScreenState extends State<ProductsScreen> {
                 // Stock Count
                 Text('Stok Adedi *', style: AppTextStyles.labelMedium.copyWith(fontWeight: FontWeight.w600)),
                 const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceVariant,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: TextField(
-                    controller: stockController,
-                    keyboardType: TextInputType.number,
-                    style: AppTextStyles.titleMedium,
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      hintText: 'Ör: 1',
-                      suffixText: 'adet',
+                TextFormField(
+                  controller: stockController,
+                  keyboardType: TextInputType.number,
+                  style: AppTextStyles.titleMedium,
+                  decoration: InputDecoration(
+                    hintText: 'Ör: 1',
+                    suffixText: 'adet',
+                    filled: true,
+                    fillColor: AppColors.surfaceVariant,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
                     ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   ),
                 ),
 
@@ -855,17 +937,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                     }
 
                     final price = double.tryParse(priceController.text) ?? 0;
-                    if (price <= 0) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: const Text('Geçerli bir fiyat girin'),
-                          backgroundColor: Colors.red,
-                          behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                      );
-                      return;
-                    }
+                    // Price can be 0 for products that are not rented
 
                     final stockCount = int.tryParse(stockController.text) ?? 1;
                     if (stockCount < 1) {
@@ -987,6 +1059,147 @@ class _ProductsScreenState extends State<ProductsScreen> {
     );
   }
 
+  // Full screen image viewer on double tap
+  void _showFullScreenImage(DressModel product) {
+    if (product.images.isEmpty) return;
+    
+    showDialog(
+      context: context,
+      barrierColor: Colors.black87,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: EdgeInsets.zero,
+        child: Stack(
+          children: [
+            // Full screen image with zoom
+            InteractiveViewer(
+              minScale: 0.5,
+              maxScale: 4.0,
+              child: Center(
+                child: GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Hero(
+                    tag: 'product_image_${product.id}',
+                    child: product.images.first.startsWith('/')
+                        ? Image.file(
+                            File(product.images.first),
+                            fit: BoxFit.contain,
+                          )
+                        : Image.network(
+                            product.images.first,
+                            fit: BoxFit.contain,
+                          ),
+                  ),
+                ),
+              ),
+            ),
+            // Close button
+            Positioned(
+              top: 50,
+              right: 20,
+              child: GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.9),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.close, color: Colors.black, size: 24),
+                ),
+              ),
+            ),
+            // Product name
+            Positioned(
+              bottom: 50,
+              left: 20,
+              right: 20,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.7),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  product.title,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Edit product name dialog
+  void _showEditProductNameDialog(DressModel product) {
+    final nameController = TextEditingController(text: product.title);
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Icon(Icons.edit, color: AppColors.primary),
+            const SizedBox(width: 8),
+            const Text('Ürün Adını Düzenle'),
+          ],
+        ),
+        content: TextField(
+          controller: nameController,
+          autofocus: true,
+          decoration: InputDecoration(
+            hintText: 'Ürün adı',
+            filled: true,
+            fillColor: AppColors.surfaceVariant,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('İptal', style: TextStyle(color: AppColors.textSecondary)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final newName = nameController.text.trim();
+              if (newName.isNotEmpty && newName != product.title) {
+                // Update product name
+                await _dataService.updateProduct(product.id, title: newName);
+                setState(() {});
+                if (mounted) Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Ürün adı güncellendi'),
+                    backgroundColor: AppColors.success,
+                  ),
+                );
+              } else {
+                Navigator.pop(context);
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: const Text('Kaydet', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
   // Product Options (Kiralama / Satış)
   void _showProductOptions(DressModel product) {
     showModalBottomSheet(
@@ -1015,42 +1228,110 @@ class _ProductsScreenState extends State<ProductsScreen> {
 
             // Product info
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(width: 20),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: product.images.isNotEmpty
-                      ? SizedBox(
-                          width: 100,
-                          height: 120,
-                          child: _buildProductImage(product.images.first),
-                        )
-                      : Container(
-                          width: 100,
-                          height: 120,
-                          color: AppColors.surfaceVariant,
-                          child: const Icon(Icons.checkroom, size: 40),
+                Column(
+                  children: [
+                    GestureDetector(
+                      onDoubleTap: () => _showFullScreenImage(product),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: product.images.isNotEmpty
+                            ? SizedBox(
+                                width: 100,
+                                height: 120,
+                                child: _buildProductImage(product.images.first),
+                              )
+                            : Container(
+                                width: 100,
+                                height: 120,
+                                color: AppColors.surfaceVariant,
+                                child: const Icon(Icons.checkroom, size: 40),
+                              ),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    // Double tap hint
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.touch_app, size: 12, color: AppColors.textLight),
+                        const SizedBox(width: 2),
+                        Text(
+                          'Çift tıkla',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: AppColors.textLight,
+                          ),
                         ),
+                      ],
+                    ),
+                  ],
                 ),
                 const SizedBox(width: 20),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        product.title,
-                        style: AppTextStyles.titleLarge.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              product.title,
+                              style: AppTextStyles.titleLarge.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.pop(context);
+                              _showEditProductNameDialog(product);
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: AppColors.surfaceVariant,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(Icons.edit, size: 18, color: AppColors.textSecondary),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 8),
-                      Text(
-                        '${product.pricePerDay.toInt()} TL',
-                        style: AppTextStyles.headlineSmall.copyWith(
-                          color: const Color(0xFFDC2626),
-                          fontWeight: FontWeight.bold,
+                      // Kiralama fiyatı
+                      if (product.pricePerDay > 0)
+                        Row(
+                          children: [
+                            Icon(Icons.calendar_today, size: 14, color: const Color(0xFFDC2626)),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Kiralama: ${product.pricePerDay.toInt()} TL',
+                              style: AppTextStyles.titleMedium.copyWith(
+                                color: const Color(0xFFDC2626),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
+                      const SizedBox(height: 4),
+                      // Satış fiyatı
+                      if (product.salePrice > 0)
+                        Row(
+                          children: [
+                            Icon(Icons.sell, size: 14, color: const Color(0xFF2563EB)),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Satış: ${product.salePrice.toInt()} TL',
+                              style: AppTextStyles.titleMedium.copyWith(
+                                color: const Color(0xFF2563EB),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
                       const SizedBox(height: 4),
                       Row(
                         children: [
@@ -3479,8 +3760,12 @@ class _ProductsScreenState extends State<ProductsScreen> {
   }
   
   // Calendar helper: Check if a date has maintenance/cleaning
+  // NEW BEHAVIOR: If product has active maintenance, only TODAY shows as orange
+  // Future dates remain available for booking
   Future<CalendarDayType> _getMaintenanceDayType(DateTime date, String productId) async {
     final checkDay = DateTime(date.year, date.month, date.day);
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
     
     try {
       final maintenanceEvents = await _dataService.getMaintenanceEventsForProduct(productId);
@@ -3488,7 +3773,12 @@ class _ProductsScreenState extends State<ProductsScreen> {
         final eventStart = DateTime(event.startDate.year, event.startDate.month, event.startDate.day);
         final eventEnd = DateTime(event.endDate.year, event.endDate.month, event.endDate.day);
         
-        if (_isInDateRange(checkDay, eventStart, eventEnd)) {
+        // Check if maintenance is currently active (today is within range)
+        final isMaintenanceActive = _isInDateRange(today, eventStart, eventEnd);
+        
+        // Only show orange for TODAY if maintenance is active
+        // Future dates remain available
+        if (isMaintenanceActive && checkDay.isAtSameMomentAs(today)) {
           return CalendarDayType.cleaning;
         }
       }
