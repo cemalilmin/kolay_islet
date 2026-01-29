@@ -1,4 +1,4 @@
-package com.example.kolay_islet
+package com.cemalilmin.kolayislet
 
 import io.flutter.embedding.android.FlutterActivity
 
