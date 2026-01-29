@@ -95,33 +95,25 @@ class SupabaseService {
   factory SupabaseService() => _instance;
   SupabaseService._internal();
 
-  // Safe lazy access to Supabase client - returns null if not initialized
-  SupabaseClient? get _client {
-    try {
-      return Supabase.instance.client;
-    } catch (e) {
-      print('DEBUG: Supabase client not available: $e');
-      return null;
-    }
-  }
+  final SupabaseClient _client = Supabase.instance.client;
 
   // ============== CATEGORIES ==============
 
   Future<List<CategoryModel>> getCategories() async {
-    final userId = _client?.auth.currentUser?.id;
+    final userId = _client.auth.currentUser?.id;
     if (userId == null) return [];
     
     try {
       // Try with sort_order first, fallback to created_at if column doesn't exist
       List<dynamic> response;
       try {
-        response = await _client?.from('user_categories')
+        response = await _client.from('user_categories')
             .select()
             .eq('user_id', userId)
             .order('sort_order', ascending: true);
       } catch (e) {
         // sort_order column might not exist, fallback to created_at
-        response = await _client?.from('user_categories')
+        response = await _client.from('user_categories')
             .select()
             .eq('user_id', userId)
             .order('created_at', ascending: true);
@@ -139,11 +131,11 @@ class SupabaseService {
   }
 
   Future<void> addCategory({required String name, required String icon}) async {
-    final userId = _client?.auth.currentUser?.id;
+    final userId = _client.auth.currentUser?.id;
     if (userId == null) return;
     
     try {
-      await _client?.from('user_categories').insert({
+      await _client.from('user_categories').insert({
         'user_id': userId,
         'name': name,
         'icon': icon,
@@ -156,7 +148,7 @@ class SupabaseService {
 
   Future<void> deleteCategory(String id) async {
     try {
-      await _client?.from('user_categories').delete().eq('id', id);
+      await _client.from('user_categories').delete().eq('id', id);
     } catch (e) {
       print('Error deleting category: $e');
       rethrow;
@@ -170,7 +162,7 @@ class SupabaseService {
       if (icon != null) data['icon'] = icon;
       if (sortOrder != null) data['sort_order'] = sortOrder;
       if (data.isNotEmpty) {
-        await _client?.from('user_categories').update(data).eq('id', id);
+        await _client.from('user_categories').update(data).eq('id', id);
       }
     } catch (e) {
       print('Error updating category: $e');
@@ -184,7 +176,7 @@ class SupabaseService {
     if (_currentUserId == null) return [];
     
     try {
-      final response = await _client?.from('products')
+      final response = await _client.from('products')
           .select('*, product_images(*)')
           .eq('user_id', _currentUserId!)
           .order('created_at', ascending: false);
@@ -223,7 +215,7 @@ class SupabaseService {
 
   Future<List<DressModel>> getProductsByCategory(String categoryId) async {
     try {
-      final response = await _client?.from('products')
+      final response = await _client.from('products')
           .select('*, product_images(*)')
           .eq('category_id', categoryId)
           .order('created_at', ascending: false);
@@ -284,7 +276,7 @@ class SupabaseService {
         'category_name': categoryId, // Store category string ID for filtering
       };
       
-      final response = await _client?.from('products').insert(data).select().single();
+      final response = await _client.from('products').insert(data).select().single();
       
       return response['id'];
     } catch (e) {
@@ -312,7 +304,7 @@ class SupabaseService {
       if (description != null) updates['description'] = description;
       if (stockCount != null) updates['total_stock'] = stockCount;
 
-      await _client?.from('products').update(updates).eq('id', id);
+      await _client.from('products').update(updates).eq('id', id);
       print('DEBUG: Product updated successfully');
     } catch (e) {
       print('Error updating product: $e');
@@ -322,7 +314,7 @@ class SupabaseService {
 
   Future<void> deleteProduct(String id) async {
     try {
-      await _client?.from('products').delete().eq('id', id);
+      await _client.from('products').delete().eq('id', id);
     } catch (e) {
       print('Error deleting product: $e');
       rethrow;
@@ -339,16 +331,16 @@ class SupabaseService {
       
       final fileName = '${productId}_${DateTime.now().millisecondsSinceEpoch}.jpg';
       
-      await _client?.storage
+      await _client.storage
           .from(SupabaseConfig.productImagesBucket)
           .upload(fileName, fileToUpload);
       
-      final imageUrl = _client?.storage
+      final imageUrl = _client.storage
           .from(SupabaseConfig.productImagesBucket)
           .getPublicUrl(fileName);
       
       // Save image reference to database
-      await _client?.from('product_images').insert({
+      await _client.from('product_images').insert({
         'product_id': productId,
         'image_url': imageUrl,
         'display_order': 0,
@@ -388,7 +380,7 @@ class SupabaseService {
     if (_currentUserId == null) return [];
     
     try {
-      final response = await _client?.from('bookings')
+      final response = await _client.from('bookings')
           .select('*, products(name)')
           .eq('user_id', _currentUserId!)
           .order('created_at', ascending: false);
@@ -422,7 +414,7 @@ class SupabaseService {
 
   Future<List<BookingModel>> getActiveBookingsForProduct(String productId) async {
     try {
-      final response = await _client?.from('bookings')
+      final response = await _client.from('bookings')
           .select()
           .eq('product_id', productId)
           .not('status', 'in', '("cancelled","completed","returned")');
@@ -487,7 +479,7 @@ class SupabaseService {
         notesWithShipping = '${notesWithShipping} [SHIPPING:${shippingBufferDays ?? 3}]'.trim();
       }
       
-      final response = await _client?.from('bookings').insert({
+      final response = await _client.from('bookings').insert({
         'user_id': _currentUserId,
         'product_id': productId,
         'product_name': productName,
@@ -515,7 +507,7 @@ class SupabaseService {
 
   Future<void> updateBookingStatus(String id, String status) async {
     try {
-      await _client?.from('bookings').update({'status': status}).eq('id', id);
+      await _client.from('bookings').update({'status': status}).eq('id', id);
     } catch (e) {
       print('Error updating booking status: $e');
       rethrow;
@@ -524,7 +516,7 @@ class SupabaseService {
 
   Future<void> deleteBooking(String id) async {
     try {
-      await _client?.from('bookings').delete().eq('id', id);
+      await _client.from('bookings').delete().eq('id', id);
       print('DEBUG: Booking deleted from Supabase');
     } catch (e) {
       print('Error deleting booking: $e');
@@ -534,8 +526,8 @@ class SupabaseService {
 
   // ============== TRANSACTIONS ==============
 
-  // Get current user ID helper - null-safe
-  String? get _currentUserId => _client?.auth.currentUser?.id;
+  // Get current user ID helper
+  String? get _currentUserId => _client.auth.currentUser?.id;
 
   Future<String?> addTransaction({
     required String type,
@@ -557,7 +549,7 @@ class SupabaseService {
     try {
       // NOTE: product_image_url is stored locally but not in Supabase (column doesn't exist)
       // Image URLs are retrieved from products table via product_id join
-      final response = await _client?.from('transactions').insert({
+      final response = await _client.from('transactions').insert({
         'user_id': _currentUserId,
         'transaction_type': type,
         'product_name': productName,
@@ -586,7 +578,7 @@ class SupabaseService {
     if (_currentUserId == null) return [];
     
     try {
-      final response = await _client?.from('transactions')
+      final response = await _client.from('transactions')
           .select('*, products(product_images(image_url))')
           .eq('user_id', _currentUserId!)
           .order('created_at', ascending: false);
@@ -603,7 +595,7 @@ class SupabaseService {
       if (paidAmount != null) {
         data['paid_amount'] = paidAmount;
       }
-      await _client?.from('transactions').update(data).eq('id', id);
+      await _client.from('transactions').update(data).eq('id', id);
       print('DEBUG: Transaction status updated to $status');
     } catch (e) {
       print('Error updating transaction status: $e');
@@ -612,7 +604,7 @@ class SupabaseService {
   
   Future<void> deleteTransaction(String id) async {
     try {
-      await _client?.from('transactions').delete().eq('id', id);
+      await _client.from('transactions').delete().eq('id', id);
       print('DEBUG: Transaction deleted from Supabase');
     } catch (e) {
       print('Error deleting transaction: $e');
@@ -625,7 +617,7 @@ class SupabaseService {
       final startOfDay = DateTime(today.year, today.month, today.day).toIso8601String();
       final endOfDay = DateTime(today.year, today.month, today.day, 23, 59, 59).toIso8601String();
       
-      final response = await _client?.from('transactions')
+      final response = await _client.from('transactions')
           .select()
           .gte('transaction_date', startOfDay)
           .lte('transaction_date', endOfDay);
@@ -664,7 +656,7 @@ class SupabaseService {
   Future<StockAvailabilityResult> getStockAvailability(String productId, DateTime start, DateTime end) async {
     try {
       // 1. Fetch total stock
-      final product = await _client?.from('products')
+      final product = await _client.from('products')
           .select('stock_count')
           .eq('id', productId)
           .single();
@@ -672,7 +664,7 @@ class SupabaseService {
       final totalStock = product['stock_count'] ?? 1;
       
       // 2. Count overlapping bookings (Range Intersection)
-      final bookings = await _client?.from('bookings')
+      final bookings = await _client.from('bookings')
           .select()
           .eq('product_id', productId)
           .not('status', 'in', '("cancelled","returned")')
@@ -754,11 +746,11 @@ class SupabaseService {
 
   // Instant "Mark as Ready" - clear all maintenance
   Future<bool> clearAllMaintenanceForProduct(String productId) async {
-    final userId = _client?.auth.currentUser?.id;
+    final userId = _client.auth.currentUser?.id;
     if (userId == null) return false;
     
     try {
-      await _client?.from('maintenance_events')
+      await _client.from('maintenance_events')
           .delete()
           .eq('product_id', productId)
           .eq('user_id', userId);
@@ -772,7 +764,7 @@ class SupabaseService {
   // Get booked dates for a product (includes maintenance dates)
   Future<Set<DateTime>> getBookedDatesForProduct(String productId) async {
     try {
-      final product = await _client?.from('products')
+      final product = await _client.from('products')
           .select('stock_count')
           .eq('id', productId)
           .single();
@@ -817,12 +809,12 @@ class SupabaseService {
   // ============== MAINTENANCE EVENTS ==============
 
   Future<List<MaintenanceEvent>> getMaintenanceEventsForProduct(String productId) async {
-    final userId = _client?.auth.currentUser?.id;
+    final userId = _client.auth.currentUser?.id;
     if (userId == null) return [];
     
     try {
       // Get maintenance events for this product (filtered by date on calendar display)
-      final response = await _client?.from('maintenance_events')
+      final response = await _client.from('maintenance_events')
           .select()
           .eq('product_id', productId)
           .eq('user_id', userId);
@@ -838,11 +830,11 @@ class SupabaseService {
 
   /// Get ALL active maintenance events for current user (for maintenance dashboard)
   Future<List<Map<String, dynamic>>> getAllMaintenanceEvents() async {
-    final userId = _client?.auth.currentUser?.id;
+    final userId = _client.auth.currentUser?.id;
     if (userId == null) return [];
     
     try {
-      final response = await _client?.from('maintenance_events')
+      final response = await _client.from('maintenance_events')
           .select('*, products(name, product_images(image_url))')
           .eq('user_id', userId)
           .gte('end_date', DateTime.now().toIso8601String().split('T')[0])
@@ -862,11 +854,11 @@ class SupabaseService {
     required DateTime endDate,
     String? description,
   }) async {
-    final userId = _client?.auth.currentUser?.id;
+    final userId = _client.auth.currentUser?.id;
     if (userId == null) return null;
     
     try {
-      final response = await _client?.from('maintenance_events').insert({
+      final response = await _client.from('maintenance_events').insert({
         'product_id': productId,
         'start_date': startDate.toIso8601String().split('T')[0],
         'end_date': endDate.toIso8601String().split('T')[0],
@@ -883,7 +875,7 @@ class SupabaseService {
 
   Future<bool> deleteMaintenanceEvent(String id) async {
     try {
-      await _client?.from('maintenance_events').delete().eq('id', id);
+      await _client.from('maintenance_events').delete().eq('id', id);
       return true;
     } catch (e) {
       print('Error deleting maintenance event: $e');
