@@ -6,7 +6,15 @@ class AuthService {
   factory AuthService() => _instance;
   AuthService._internal();
 
-  final SupabaseClient _client = Supabase.instance.client;
+  // Safe Supabase client access - returns null if not initialized
+  SupabaseClient? get _client {
+    try {
+      return Supabase.instance.client;
+    } catch (e) {
+      print('DEBUG: Supabase client not available: $e');
+      return null;
+    }
+  }
   
   // Cached profile data for instant access
   Map<String, dynamic>? _cachedProfile;
@@ -18,13 +26,13 @@ class AuthService {
   String get cachedStoreSlogan => _cachedProfile?['store_slogan'] ?? 'RENTAL BOUTIQUE';
 
   // Get current user
-  User? get currentUser => _client.auth.currentUser;
+  User? get currentUser => _client?.auth.currentUser;
   
   // Check if user is logged in
   bool get isLoggedIn => currentUser != null;
 
-  // Auth state stream
-  Stream<AuthState> get authStateChanges => _client.auth.onAuthStateChange;
+  // Auth state stream - safe version
+  Stream<AuthState>? get authStateChanges => _client?.auth.onAuthStateChange;
 
   // Sign up with email and password
   Future<AuthResponse> signUp({
@@ -34,8 +42,13 @@ class AuthService {
     String? storeName,
     String? phone,
   }) async {
+    final client = _client;
+    if (client == null) {
+      throw Exception('Sunucu bağlantısı kurulamadı');
+    }
+    
     try {
-      final response = await _client.auth.signUp(
+      final response = await client.auth.signUp(
         email: email,
         password: password,
         data: {
@@ -47,7 +60,7 @@ class AuthService {
       
       // Update profile with additional info
       if (response.user != null) {
-        await _client.from('profiles').update({
+        await client.from('profiles').update({
           'full_name': fullName,
           'store_name': storeName,
           'phone': phone,
@@ -66,8 +79,13 @@ class AuthService {
     required String email,
     required String password,
   }) async {
+    final client = _client;
+    if (client == null) {
+      throw Exception('Sunucu bağlantısı kurulamadı');
+    }
+    
     try {
-      return await _client.auth.signInWithPassword(
+      return await client.auth.signInWithPassword(
         email: email,
         password: password,
       );
@@ -84,7 +102,7 @@ class AuthService {
       DataService().clearData();
       _cachedProfile = null;
       
-      await _client.auth.signOut();
+      await _client?.auth.signOut();
     } catch (e) {
       print('Sign out error: $e');
       rethrow;
@@ -93,10 +111,11 @@ class AuthService {
 
   // Get user profile
   Future<Map<String, dynamic>?> getProfile() async {
+    final client = _client;
+    if (client == null || currentUser == null) return null;
+    
     try {
-      if (currentUser == null) return null;
-      
-      final response = await _client
+      final response = await client
           .from('profiles')
           .select()
           .eq('id', currentUser!.id)
@@ -119,9 +138,10 @@ class AuthService {
     String? storeSlogan,
     String? phone,
   }) async {
+    final client = _client;
+    if (client == null || currentUser == null) return;
+    
     try {
-      if (currentUser == null) return;
-      
       final updates = <String, dynamic>{
         'updated_at': DateTime.now().toIso8601String(),
       };
@@ -131,7 +151,7 @@ class AuthService {
       if (storeSlogan != null) updates['store_slogan'] = storeSlogan;
       if (phone != null) updates['phone'] = phone;
       
-      await _client
+      await client
           .from('profiles')
           .update(updates)
           .eq('id', currentUser!.id);
@@ -143,8 +163,13 @@ class AuthService {
 
   // Reset password
   Future<void> resetPassword(String email) async {
+    final client = _client;
+    if (client == null) {
+      throw Exception('Sunucu bağlantısı kurulamadı');
+    }
+    
     try {
-      await _client.auth.resetPasswordForEmail(email);
+      await client.auth.resetPasswordForEmail(email);
     } catch (e) {
       print('Reset password error: $e');
       rethrow;
@@ -153,40 +178,45 @@ class AuthService {
 
   // Delete user account - required for App Store & Play Store compliance
   Future<void> deleteAccount() async {
+    final client = _client;
+    if (client == null) {
+      throw Exception('Sunucu bağlantısı kurulamadı');
+    }
+    
+    if (currentUser == null) {
+      throw Exception('Kullanıcı oturumu bulunamadı');
+    }
+    
     try {
-      if (currentUser == null) {
-        throw Exception('Kullanıcı oturumu bulunamadı');
-      }
-
       final userId = currentUser!.id;
 
       // Delete user data from all related tables
       // Order matters due to foreign key constraints
       
       // 1. Delete bookings
-      await _client.from('bookings').delete().eq('user_id', userId);
+      await client.from('bookings').delete().eq('user_id', userId);
       
       // 2. Delete transactions  
-      await _client.from('transactions').delete().eq('user_id', userId);
+      await client.from('transactions').delete().eq('user_id', userId);
       
       // 3. Delete maintenance events
-      await _client.from('maintenance_events').delete().eq('user_id', userId);
+      await client.from('maintenance_events').delete().eq('user_id', userId);
       
       // 4. Delete products
-      await _client.from('products').delete().eq('user_id', userId);
+      await client.from('products').delete().eq('user_id', userId);
       
       // 5. Delete categories
-      await _client.from('categories').delete().eq('user_id', userId);
+      await client.from('categories').delete().eq('user_id', userId);
       
       // 6. Delete profile
-      await _client.from('profiles').delete().eq('id', userId);
+      await client.from('profiles').delete().eq('id', userId);
       
       // 7. Clear local cache
       DataService().clearData();
       _cachedProfile = null;
       
       // 8. Sign out (this will also handle auth state change)
-      await _client.auth.signOut();
+      await client.auth.signOut();
       
     } catch (e) {
       print('Delete account error: $e');

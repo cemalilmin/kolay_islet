@@ -6,6 +6,7 @@ import '../models/category_model.dart';
 import '../models/maintenance_event_model.dart';
 import 'supabase_service.dart';
 import 'notification_service.dart';
+import 'review_service.dart';
 
 // Transaction Model
 class TransactionModel {
@@ -756,6 +757,11 @@ class DataService {
       }
       
       await refreshProducts();
+      
+      // Trigger review request after successful product addition
+      ReviewService().recordAction();
+      ReviewService().requestReview();
+      
       return id;
     } catch (e) {
       print('Error adding product: $e');
@@ -844,6 +850,10 @@ class DataService {
           productName: dressTitle,
           rentalDate: startDate,
         );
+        
+        // Trigger review request after successful booking
+        ReviewService().recordAction();
+        ReviewService().requestReview();
       }
       
       return bookingId;

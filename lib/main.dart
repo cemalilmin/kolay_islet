@@ -10,6 +10,7 @@ import 'widgets/auth_wrapper.dart';
 import 'config/supabase_config.dart';
 import 'services/settings_service.dart';
 import 'services/notification_service.dart';
+import 'services/review_service.dart';
 
 // Global navigator key for notification navigation
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -21,19 +22,50 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   // Load environment variables from .env file
-  await dotenv.load(fileName: ".env");
+  try {
+    await dotenv.load(fileName: ".env");
+  } catch (e) {
+    print('DEBUG: Failed to load .env file: $e');
+    // Continue without .env - will use hardcoded fallbacks
+  }
   
-  // Initialize services
-  await Supabase.initialize(
-    url: SupabaseConfig.supabaseUrl,
-    anonKey: SupabaseConfig.supabaseAnonKey,
-  );
+  // Initialize Supabase with safety check
+  try {
+    final supabaseUrl = SupabaseConfig.supabaseUrl;
+    final supabaseKey = SupabaseConfig.supabaseAnonKey;
+    
+    if (supabaseUrl.isNotEmpty && supabaseKey.isNotEmpty) {
+      await Supabase.initialize(
+        url: supabaseUrl,
+        anonKey: supabaseKey,
+      );
+    } else {
+      print('DEBUG: Supabase credentials missing - running in offline mode');
+    }
+  } catch (e) {
+    print('DEBUG: Failed to initialize Supabase: $e');
+  }
   
-  // Initialize settings
-  await SettingsService().init();
+  // Initialize settings (with error handling)
+  try {
+    await SettingsService().init();
+  } catch (e) {
+    print('DEBUG: Failed to initialize SettingsService: $e');
+  }
   
-  // Initialize notifications
-  await NotificationService().initialize();
+  // Initialize notifications (with error handling)
+  try {
+    await NotificationService().initialize();
+  } catch (e) {
+    print('DEBUG: Failed to initialize NotificationService: $e');
+  }
+  
+  // Initialize review service (with error handling)
+  try {
+    await ReviewService().init();
+  } catch (e) {
+    print('DEBUG: Failed to initialize ReviewService: $e');
+  }
   
   // Set up notification tap handler
   NotificationService.onNotificationTap = (bookingId) {
