@@ -49,3 +49,4 @@ android/app/upload-keystore.jks
 # Environment files with secrets
 .env
 *.env.local
+ios/build/

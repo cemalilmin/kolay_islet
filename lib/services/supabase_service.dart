@@ -95,7 +95,9 @@ class SupabaseService {
   factory SupabaseService() => _instance;
   SupabaseService._internal();
 
-  final SupabaseClient _client = Supabase.instance.client;
+  // Lazy getter - only accesses Supabase when needed, not at class instantiation
+  // All methods have try/catch so this will gracefully fail if Supabase is not initialized
+  SupabaseClient get _client => Supabase.instance.client;
 
   // ============== CATEGORIES ==============
 
