@@ -1261,12 +1261,14 @@ class _AccountingScreenState extends State<AccountingScreen> {
                 // Label row
                 Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: Color(0xFF374151))),
                 const SizedBox(height: 2),
-                // Amount row
-                Text(
-                  '${isIncome ? '+' : '-'}₺${formatNumber(amount.toInt())}',
-                  style: TextStyle(color: amountColor, fontWeight: FontWeight.bold, fontSize: 16),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                // Amount row - auto-scales to fit
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    '${isIncome ? '+' : '-'}₺${formatNumber(amount.toInt())}',
+                    style: TextStyle(color: amountColor, fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
                 ),
                 // Count row
                 if (count != null)

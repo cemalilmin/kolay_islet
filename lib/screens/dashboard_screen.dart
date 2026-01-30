@@ -713,12 +713,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 // Label row
                 Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: Color(0xFF374151))),
                 const SizedBox(height: 2),
-                // Amount row
-                Text(
-                  '${isGider ? '-' : '+'}₺${formatNumber(amount.toInt())}',
-                  style: TextStyle(color: amountColor, fontWeight: FontWeight.bold, fontSize: 16),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                // Amount row - auto-scales to fit
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    '${isGider ? '-' : '+'}₺${formatNumber(amount.toInt())}',
+                    style: TextStyle(color: amountColor, fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
                 ),
                 // Count row
                 Text('$count adet', style: TextStyle(color: Colors.grey[600], fontSize: 12, fontWeight: FontWeight.w500)),
