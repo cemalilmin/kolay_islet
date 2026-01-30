@@ -1265,6 +1265,8 @@ class _AccountingScreenState extends State<AccountingScreen> {
                 Text(
                   '${isIncome ? '+' : '-'}₺${formatNumber(amount.toInt())}',
                   style: TextStyle(color: amountColor, fontWeight: FontWeight.bold, fontSize: 16),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 // Count row
                 if (count != null)

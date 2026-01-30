@@ -717,6 +717,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Text(
                   '${isGider ? '-' : '+'}₺${formatNumber(amount.toInt())}',
                   style: TextStyle(color: amountColor, fontWeight: FontWeight.bold, fontSize: 16),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 // Count row
                 Text('$count adet', style: TextStyle(color: Colors.grey[600], fontSize: 12, fontWeight: FontWeight.w500)),
