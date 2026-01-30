@@ -1166,46 +1166,64 @@ class _AccountingScreenState extends State<AccountingScreen> {
     required Color borderColor,
     required bool isIncome,
   }) {
+    // Format amount for display
+    String formattedAmount;
+    if (amount >= 1000000) {
+      formattedAmount = '₺${(amount / 1000000).toStringAsFixed(1)}M';
+    } else if (amount >= 1000) {
+      formattedAmount = '₺${(amount / 1000).toStringAsFixed(1)}K';
+    } else {
+      formattedAmount = '₺${amount.toInt()}';
+    }
+    
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         color: bgColor,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(color: borderColor),
       ),
       child: Row(
         children: [
           Container(width: 10, height: 10, decoration: BoxDecoration(shape: BoxShape.circle, color: color)),
-          const SizedBox(width: 8),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                  Text(label, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 11, color: Color(0xFF374151))),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(4)),
-                    child: Text('%$percent', style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
-                  ),
-                ]),
-                const SizedBox(height: 2),
-                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                  Expanded(
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        '${isIncome ? '+' : '-'}₺${amount.toInt()}',
-                        style: TextStyle(color: isIncome ? const Color(0xFF059669) : const Color(0xFFDC2626), fontWeight: FontWeight.w600, fontSize: 13),
-                      ),
+                // Row 1: Label + Percent badge
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      label,
+                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12, color: Color(0xFF374151)),
                     ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(4)),
+                      child: Text('%$percent', style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                // Row 2: Amount
+                Text(
+                  '${isIncome ? '+' : '-'}$formattedAmount',
+                  style: TextStyle(
+                    color: isIncome ? const Color(0xFF059669) : const Color(0xFFDC2626), 
+                    fontWeight: FontWeight.bold, 
+                    fontSize: 15,
                   ),
-                  const SizedBox(width: 4),
-                  if (count != null)
-                    Text('$count adet', style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w600)),
-                ]),
+                ),
+                const SizedBox(height: 2),
+                // Row 3: Count
+                if (count != null)
+                  Text(
+                    '$count adet',
+                    style: TextStyle(color: color.withOpacity(0.8), fontSize: 11, fontWeight: FontWeight.w500),
+                  ),
               ],
             ),
           ),

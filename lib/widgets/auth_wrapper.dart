@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../screens/login_screen.dart';
+import '../screens/onboarding_screen.dart';
 import '../services/data_service.dart';
 import '../main.dart';
 
@@ -14,6 +16,7 @@ class AuthWrapper extends StatefulWidget {
 class _AuthWrapperState extends State<AuthWrapper> {
   bool _isLoading = true;
   bool _isLoggedIn = false;
+  bool _showOnboarding = false;
   String? _currentUserId;
   int _rebuildKey = 0;
   bool _supabaseAvailable = false;
@@ -21,6 +24,30 @@ class _AuthWrapperState extends State<AuthWrapper> {
   @override
   void initState() {
     super.initState();
+    _checkOnboarding();
+  }
+
+  Future<void> _checkOnboarding() async {
+    final prefs = await SharedPreferences.getInstance();
+    final onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;
+    
+    if (!onboardingCompleted) {
+      if (mounted) {
+        setState(() {
+          _showOnboarding = true;
+          _isLoading = false;
+        });
+      }
+    } else {
+      _initializeAuth();
+    }
+  }
+
+  void _onOnboardingComplete() {
+    setState(() {
+      _showOnboarding = false;
+      _isLoading = true;
+    });
     _initializeAuth();
   }
 
@@ -123,6 +150,11 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
   @override
   Widget build(BuildContext context) {
+    // Show onboarding on first launch
+    if (_showOnboarding) {
+      return OnboardingScreen(onComplete: _onOnboardingComplete);
+    }
+    
     if (_isLoading) {
       return Scaffold(
         body: Center(

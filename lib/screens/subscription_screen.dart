@@ -13,6 +13,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   bool _isLoading = false;
   bool _hasActiveSubscription = false;
   DateTime? _trialEndDate;
+  bool _isYearlyPlan = true; // Default to yearly for best value
   
   @override
   void initState() {
@@ -174,162 +175,13 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               
               const SizedBox(height: 40),
               
-              // Pricing Card
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      AppColors.primary,
-                      AppColors.primary.withOpacity(0.8),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFDC2626).withOpacity(0.3),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    // Badge
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.local_fire_department, color: Colors.amber, size: 16),
-                          SizedBox(width: 4),
-                          Text(
-                            'EN POPÜLER',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 20),
-                    
-                    // Price
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '₺',
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.8),
-                            fontSize: 24,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const Text(
-                          '499',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 56,
-                            fontWeight: FontWeight.bold,
-                            height: 1,
-                          ),
-                        ),
-                        Text(
-                          '/ay',
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.8),
-                            fontSize: 18,
-                          ),
-                        ),
-                      ],
-                    ),
-                    
-                    const SizedBox(height: 8),
-                    
-                    Text(
-                      'İlk 30 gün ücretsiz!',
-                      style: TextStyle(
-                        color: Colors.amber[300],
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 24),
-                    
-                    // CTA Button
-                    GestureDetector(
-                      onTap: _isLoading ? null : _startFreeTrial,
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 18),
-                        decoration: BoxDecoration(
-                          color: _isLoading ? Colors.white.withOpacity(0.5) : Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: _isLoading
-                              ? [
-                                  SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: const Color(0xFFDC2626),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Text(
-                                    'İşleniyor...',
-                                    style: TextStyle(
-                                      color: const Color(0xFFDC2626),
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ]
-                              : [
-                                  Icon(Icons.rocket_launch, color: const Color(0xFFDC2626)),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'Ücretsiz Deneyin',
-                                    style: TextStyle(
-                                      color: const Color(0xFFDC2626),
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                        ),
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 16),
-                    
-                    Text(
-                      'İstediğiniz zaman iptal edebilirsiniz',
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.7),
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              // Pricing Cards - Plan Selection
+              _buildPlanSelector(),
+              
+              const SizedBox(height: 20),
+              
+              // Selected Plan Card
+              _buildSelectedPlanCard(),
               
               const SizedBox(height: 24),
               
@@ -447,6 +299,292 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             Icons.check_circle,
             color: AppColors.success,
             size: 24,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPlanSelector() {
+    return Row(
+      children: [
+        // Monthly Plan
+        Expanded(
+          child: GestureDetector(
+            onTap: () => setState(() => _isYearlyPlan = false),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: !_isYearlyPlan ? const Color(0xFFFEE2E2) : Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: !_isYearlyPlan ? const Color(0xFFDC2626) : Colors.grey[300]!,
+                  width: !_isYearlyPlan ? 2 : 1,
+                ),
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    'Aylık',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                      color: !_isYearlyPlan ? const Color(0xFFDC2626) : Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '₺999',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 28,
+                      color: !_isYearlyPlan ? const Color(0xFFDC2626) : Colors.grey[800],
+                    ),
+                  ),
+                  Text(
+                    '/ay',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        // Yearly Plan
+        Expanded(
+          child: GestureDetector(
+            onTap: () => setState(() => _isYearlyPlan = true),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: _isYearlyPlan ? const Color(0xFFFEE2E2) : Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: _isYearlyPlan ? const Color(0xFFDC2626) : Colors.grey[300]!,
+                  width: _isYearlyPlan ? 2 : 1,
+                ),
+              ),
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Column(
+                    children: [
+                      Text(
+                        'Yıllık',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                          color: _isYearlyPlan ? const Color(0xFFDC2626) : Colors.grey[600],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '₺799',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 28,
+                          color: _isYearlyPlan ? const Color(0xFFDC2626) : Colors.grey[800],
+                        ),
+                      ),
+                      Text(
+                        '/ay',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                  // Save badge
+                  Positioned(
+                    top: -8,
+                    right: -8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF059669),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text(
+                        '%20 TASARRUF',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSelectedPlanCard() {
+    final price = _isYearlyPlan ? '799' : '999';
+    final period = _isYearlyPlan ? 'ay (yıllık ödeme: ₺9.588)' : 'ay';
+    
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.primary,
+            AppColors.primary.withOpacity(0.8),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFDC2626).withOpacity(0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Badge
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.local_fire_department, color: Colors.amber, size: 16),
+                const SizedBox(width: 4),
+                Text(
+                  _isYearlyPlan ? 'EN İYİ DEĞer' : 'ESNEK PLAN',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          const SizedBox(height: 20),
+          
+          // Price
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '₺',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.8),
+                  fontSize: 24,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Text(
+                price,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 56,
+                  fontWeight: FontWeight.bold,
+                  height: 1,
+                ),
+              ),
+              Text(
+                '/$period',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.8),
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+          
+          const SizedBox(height: 8),
+          
+          Text(
+            'İlk 30 gün ücretsiz!',
+            style: TextStyle(
+              color: Colors.amber[300],
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          
+          const SizedBox(height: 24),
+          
+          // CTA Button
+          GestureDetector(
+            onTap: _isLoading ? null : _startFreeTrial,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 18),
+              decoration: BoxDecoration(
+                color: _isLoading ? Colors.white.withOpacity(0.5) : Colors.white,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: _isLoading
+                    ? [
+                        const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Color(0xFFDC2626),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Text(
+                          'İşleniyor...',
+                          style: TextStyle(
+                            color: Color(0xFFDC2626),
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ]
+                    : [
+                        const Icon(Icons.rocket_launch, color: Color(0xFFDC2626)),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Ücretsiz Deneyin',
+                          style: TextStyle(
+                            color: Color(0xFFDC2626),
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+              ),
+            ),
+          ),
+          
+          const SizedBox(height: 16),
+          
+          Text(
+            'İstediğiniz zaman iptal edebilirsiniz',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.7),
+              fontSize: 13,
+            ),
           ),
         ],
       ),

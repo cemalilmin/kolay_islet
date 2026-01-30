@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'core/theme/app_theme.dart';
@@ -89,6 +90,16 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Mağaza İsmi',
       theme: AppTheme.lightTheme,
+      // Turkish localization
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('tr', 'TR'),
+      ],
+      locale: const Locale('tr', 'TR'),
       home: const AuthWrapper(),
     );
   }
@@ -104,6 +115,7 @@ class MainLayout extends StatefulWidget {
 class MainLayoutState extends State<MainLayout> {
   int _currentIndex = 1; // Ana Sayfa default
   int _refreshKey = 0; // Key to force rebuild
+  DateTime? _lastBackPress;
 
   // Method to navigate to Dashboard from notification
   void navigateToDashboard() {
@@ -115,22 +127,45 @@ class MainLayoutState extends State<MainLayout> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: [
-          AccountingScreen(key: ValueKey('accounting_$_refreshKey')),
-          DashboardScreen(key: ValueKey('dashboard_$_refreshKey')),
-          ProductsScreen(key: ValueKey('products_$_refreshKey')),
-        ],
-      ),
-      extendBody: true,
-      bottomNavigationBar: CustomBottomNav(
-        currentIndex: _currentIndex,
-        onTap: (index) => setState(() {
-          _currentIndex = index;
-          _refreshKey++; // Force rebuild to show fresh data
-        }),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        
+        final now = DateTime.now();
+        if (_lastBackPress == null || now.difference(_lastBackPress!) > const Duration(seconds: 2)) {
+          _lastBackPress = now;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Çıkmak için tekrar basın'),
+              duration: const Duration(seconds: 2),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              backgroundColor: const Color(0xFF374151),
+            ),
+          );
+        } else {
+          // Exit app on double back press
+          Navigator.of(context).pop();
+        }
+      },
+      child: Scaffold(
+        body: IndexedStack(
+          index: _currentIndex,
+          children: [
+            AccountingScreen(key: ValueKey('accounting_$_refreshKey')),
+            DashboardScreen(key: ValueKey('dashboard_$_refreshKey')),
+            ProductsScreen(key: ValueKey('products_$_refreshKey')),
+          ],
+        ),
+        extendBody: true,
+        bottomNavigationBar: CustomBottomNav(
+          currentIndex: _currentIndex,
+          onTap: (index) => setState(() {
+            _currentIndex = index;
+            _refreshKey++; // Force rebuild to show fresh data
+          }),
+        ),
       ),
     );
   }
