@@ -485,10 +485,10 @@ class _AccountingScreenState extends State<AccountingScreen> {
                 Text('Açıklama', style: AppTextStyles.labelMedium.copyWith(fontWeight: FontWeight.w600)),
                 const SizedBox(height: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
                     color: AppColors.surfaceVariant,
                     borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.border),
                   ),
                   child: TextField(
                     controller: descriptionController,
@@ -496,8 +496,13 @@ class _AccountingScreenState extends State<AccountingScreen> {
                     decoration: InputDecoration(
                       border: InputBorder.none,
                       hintText: 'Ör: Elektrik faturası',
-                      prefixIcon: Icon(Icons.description_outlined, color: AppColors.textSecondary.withOpacity(0.7)),
-                      prefixIconConstraints: const BoxConstraints(minWidth: 30, maxHeight: 24),
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      prefixIcon: Padding(
+                        padding: const EdgeInsets.only(left: 12, right: 8),
+                        child: Icon(Icons.description_outlined, color: AppColors.textSecondary.withOpacity(0.7), size: 20),
+                      ),
+                      prefixIconConstraints: const BoxConstraints(minWidth: 40, minHeight: 40),
                     ),
                   ),
                 ),
@@ -508,10 +513,10 @@ class _AccountingScreenState extends State<AccountingScreen> {
                 Text('Tutar', style: AppTextStyles.labelMedium.copyWith(fontWeight: FontWeight.w600)),
                 const SizedBox(height: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
                     color: AppColors.surfaceVariant,
                     borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.border),
                   ),
                   child: TextField(
                     controller: amountController,
@@ -520,9 +525,13 @@ class _AccountingScreenState extends State<AccountingScreen> {
                     decoration: InputDecoration(
                       border: InputBorder.none,
                       hintText: 'Tutar',
-                      prefixText: '₺',
-                      prefixIcon: Icon(Icons.attach_money, color: AppColors.textSecondary.withOpacity(0.7)),
-                      prefixIconConstraints: const BoxConstraints(minWidth: 30, maxHeight: 24),
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      prefixIcon: Padding(
+                        padding: const EdgeInsets.only(left: 12, right: 8),
+                        child: Icon(Icons.attach_money, color: AppColors.textSecondary.withOpacity(0.7), size: 20),
+                      ),
+                      prefixIconConstraints: const BoxConstraints(minWidth: 40, minHeight: 40),
                     ),
                   ),
                 ),
@@ -533,10 +542,10 @@ class _AccountingScreenState extends State<AccountingScreen> {
                 Text('Not (Opsiyonel)', style: AppTextStyles.labelMedium.copyWith(fontWeight: FontWeight.w600)),
                 const SizedBox(height: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
                     color: AppColors.surfaceVariant,
                     borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.border),
                   ),
                   child: TextField(
                     controller: noteController,
@@ -545,8 +554,13 @@ class _AccountingScreenState extends State<AccountingScreen> {
                     decoration: InputDecoration(
                       border: InputBorder.none,
                       hintText: 'Ek not ekleyin...',
-                      prefixIcon: Icon(Icons.note_outlined, color: AppColors.textSecondary.withOpacity(0.7)),
-                      prefixIconConstraints: const BoxConstraints(minWidth: 30, maxHeight: 24),
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      prefixIcon: Padding(
+                        padding: const EdgeInsets.only(left: 12, right: 8),
+                        child: Icon(Icons.note_outlined, color: AppColors.textSecondary.withOpacity(0.7), size: 20),
+                      ),
+                      prefixIconConstraints: const BoxConstraints(minWidth: 40, minHeight: 40),
                     ),
                   ),
                 ),
@@ -804,10 +818,10 @@ class _AccountingScreenState extends State<AccountingScreen> {
                 Text('Açıklama', style: AppTextStyles.labelMedium.copyWith(fontWeight: FontWeight.w600)),
                 const SizedBox(height: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
                     color: AppColors.surfaceVariant,
                     borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.border),
                   ),
                   child: TextField(
                     controller: descriptionController,
@@ -815,8 +829,13 @@ class _AccountingScreenState extends State<AccountingScreen> {
                     decoration: InputDecoration(
                       border: InputBorder.none,
                       hintText: 'Örn: Taç satışı, Ütü hizmeti',
-                      prefixIcon: Icon(Icons.description_outlined, color: AppColors.textSecondary.withOpacity(0.7)),
-                      prefixIconConstraints: const BoxConstraints(minWidth: 30, maxHeight: 24),
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      prefixIcon: Padding(
+                        padding: const EdgeInsets.only(left: 12, right: 8),
+                        child: Icon(Icons.description_outlined, color: AppColors.textSecondary.withOpacity(0.7), size: 20),
+                      ),
+                      prefixIconConstraints: const BoxConstraints(minWidth: 40, minHeight: 40),
                     ),
                   ),
                 ),
@@ -827,10 +846,10 @@ class _AccountingScreenState extends State<AccountingScreen> {
                 Text('Tutar', style: AppTextStyles.labelMedium.copyWith(fontWeight: FontWeight.w600)),
                 const SizedBox(height: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
                     color: AppColors.surfaceVariant,
                     borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.border),
                   ),
                   child: TextField(
                     controller: amountController,
@@ -839,9 +858,13 @@ class _AccountingScreenState extends State<AccountingScreen> {
                     decoration: InputDecoration(
                       border: InputBorder.none,
                       hintText: 'Tutar',
-                      prefixText: '₺',
-                      prefixIcon: Icon(Icons.attach_money, color: AppColors.textSecondary.withOpacity(0.7)),
-                      prefixIconConstraints: const BoxConstraints(minWidth: 30, maxHeight: 24),
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      prefixIcon: Padding(
+                        padding: const EdgeInsets.only(left: 12, right: 8),
+                        child: Icon(Icons.attach_money, color: AppColors.textSecondary.withOpacity(0.7), size: 20),
+                      ),
+                      prefixIconConstraints: const BoxConstraints(minWidth: 40, minHeight: 40),
                     ),
                   ),
                 ),
@@ -1029,63 +1052,99 @@ class _AccountingScreenState extends State<AccountingScreen> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Donut Chart - larger size
-              SizedBox(
-                width: 140,
-                height: 140,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    // Chart
-                    hasData
-                      ? CustomPaint(
-                          size: const Size(140, 140),
-                          painter: PieChartPainter(
-                            kiralama: kiralamaGelir / total,
-                            satis: satisGelir / total,
-                            gider: giderTutar / total,
-                          ),
-                        )
-                      : Container(
-                          width: 140,
-                          height: 140,
+              // Donut Chart with percentage labels below
+              Column(
+                children: [
+                  SizedBox(
+                    width: 140,
+                    height: 140,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // Chart
+                        hasData
+                          ? CustomPaint(
+                              size: const Size(140, 140),
+                              painter: PieChartPainter(
+                                kiralama: kiralamaGelir / total,
+                                satis: satisGelir / total,
+                                gider: giderTutar / total,
+                              ),
+                            )
+                          : Container(
+                              width: 140,
+                              height: 140,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.grey[200]!, width: 14),
+                              ),
+                            ),
+                        
+                        // Center content badge
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                           decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.grey[200]!, width: 14),
+                            gradient: net >= 0
+                                ? const LinearGradient(colors: [Color(0xFF059669), Color(0xFF047857)])
+                                : const LinearGradient(colors: [Color(0xFFDC2626), Color(0xFFB91C1C)]),
+                            borderRadius: BorderRadius.circular(18),
+                            boxShadow: [
+                              BoxShadow(
+                                color: (net >= 0 ? const Color(0xFF059669) : const Color(0xFFDC2626)).withOpacity(0.25),
+                                blurRadius: 6,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              net.abs() >= 1000000 ? '₺${(net.abs() / 1000000).toStringAsFixed(1)}M' : '₺${net.toInt().abs()}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
+                            ),
                           ),
                         ),
-                    
-                    // Center content badge
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                      decoration: BoxDecoration(
-                        gradient: net >= 0
-                            ? const LinearGradient(colors: [Color(0xFF059669), Color(0xFF047857)])
-                            : const LinearGradient(colors: [Color(0xFFDC2626), Color(0xFFB91C1C)]),
-                        borderRadius: BorderRadius.circular(18),
-                        boxShadow: [
-                          BoxShadow(
-                            color: (net >= 0 ? const Color(0xFF059669) : const Color(0xFFDC2626)).withOpacity(0.25),
-                            blurRadius: 6,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          net.abs() >= 1000000 ? '₺${(net.abs() / 1000000).toStringAsFixed(1)}M' : '₺${net.toInt().abs()}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ),
+                      ],
                     ),
-                    // Percentage labels shown in legend section instead
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 8),
+                  // Percentage badges below chart
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF9333EA),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text('%$kiralamaPercent', style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold)),
+                      ),
+                      const SizedBox(width: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF14B8A6),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text('%$satisPercent', style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold)),
+                      ),
+                      const SizedBox(width: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEF4444),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text('%$giderPercent', style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
+                ],
               ),
 
               const SizedBox(width: 16),
@@ -1167,24 +1226,24 @@ class _AccountingScreenState extends State<AccountingScreen> {
     required bool isIncome,
   }) {
     // Format amount for display - full numbers with thousand separators
-    String formattedAmount;
-    final intAmount = amount.toInt();
-    if (intAmount >= 1000) {
-      // Add thousand separator
-      final parts = <String>[];
-      String numStr = intAmount.toString();
-      while (numStr.length > 3) {
-        parts.insert(0, numStr.substring(numStr.length - 3));
-        numStr = numStr.substring(0, numStr.length - 3);
+    String formatNumber(int num) {
+      if (num >= 1000) {
+        final parts = <String>[];
+        String numStr = num.toString();
+        while (numStr.length > 3) {
+          parts.insert(0, numStr.substring(numStr.length - 3));
+          numStr = numStr.substring(0, numStr.length - 3);
+        }
+        parts.insert(0, numStr);
+        return parts.join('.');
       }
-      parts.insert(0, numStr);
-      formattedAmount = '₺${parts.join('.')}';
-    } else {
-      formattedAmount = '₺$intAmount';
+      return num.toString();
     }
     
+    final amountColor = isIncome ? const Color(0xFF059669) : const Color(0xFFDC2626);
+    
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(10),
@@ -1192,45 +1251,24 @@ class _AccountingScreenState extends State<AccountingScreen> {
       ),
       child: Row(
         children: [
-          Container(width: 10, height: 10, decoration: BoxDecoration(shape: BoxShape.circle, color: color)),
-          const SizedBox(width: 10),
+          Container(width: 8, height: 8, decoration: BoxDecoration(shape: BoxShape.circle, color: color)),
+          const SizedBox(width: 8),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Row 1: Label + Percent badge
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      label,
-                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12, color: Color(0xFF374151)),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(4)),
-                      child: Text('%$percent', style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                // Row 2: Amount
-                Text(
-                  '${isIncome ? '+' : '-'}$formattedAmount',
-                  style: TextStyle(
-                    color: isIncome ? const Color(0xFF059669) : const Color(0xFFDC2626), 
-                    fontWeight: FontWeight.bold, 
-                    fontSize: 15,
-                  ),
-                ),
+                // Label row
+                Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: Color(0xFF374151))),
                 const SizedBox(height: 2),
-                // Row 3: Count
+                // Amount row
+                Text(
+                  '${isIncome ? '+' : '-'}₺${formatNumber(amount.toInt())}',
+                  style: TextStyle(color: amountColor, fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                // Count row
                 if (count != null)
-                  Text(
-                    '$count adet',
-                    style: TextStyle(color: color.withOpacity(0.8), fontSize: 11, fontWeight: FontWeight.w500),
-                  ),
+                  Text('$count adet', style: TextStyle(color: Colors.grey[700], fontSize: 12, fontWeight: FontWeight.w500)),
               ],
             ),
           ),

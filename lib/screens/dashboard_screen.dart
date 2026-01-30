@@ -382,17 +382,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 4),
-                    // Subtitle
-                    Text(
-                      _storeSlogan.toUpperCase(),
-                      style: AppTextStyles.labelSmall.copyWith(
-                        color: Colors.white.withOpacity(0.7),
-                        letterSpacing: 3,
-                        fontSize: 10,
+                    // Subtitle - use FittedBox to show full text
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        _storeSlogan.toUpperCase(),
+                        style: AppTextStyles.labelSmall.copyWith(
+                          color: Colors.white.withOpacity(0.7),
+                          letterSpacing: 2,
+                          fontSize: 9,
+                        ),
+                        maxLines: 1,
+                        textAlign: TextAlign.center,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),
@@ -466,63 +468,90 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       child: Row(
         children: [
-          // Pie Chart with percentage labels
-          SizedBox(
-            width: 160,
-            height: 160,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                // Chart
-                hasData
-                  ? SizedBox(
-                      width: 140,
-                      height: 140,
-                      child: CustomPaint(
-                        painter: PieChartPainterSimple(
-                          kiralama: kiralamaGelir / total,
-                          satis: satisGelir / total,
+          // Pie Chart with percentage labels below
+          Column(
+            children: [
+              SizedBox(
+                width: 160,
+                height: 160,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // Chart
+                    hasData
+                      ? SizedBox(
+                          width: 140,
+                          height: 140,
+                          child: CustomPaint(
+                            painter: PieChartPainterSimple(
+                              kiralama: kiralamaGelir / total,
+                              satis: satisGelir / total,
+                            ),
+                          ),
+                        )
+                      : Container(
+                          width: 140,
+                          height: 140,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.grey[200]!, width: 14),
+                          ),
+                        ),
+                    
+                    // Center content badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(colors: [Color(0xFF059669), Color(0xFF047857)]),
+                        borderRadius: BorderRadius.circular(18),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF059669).withOpacity(0.25),
+                            blurRadius: 6,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          total >= 1000000 ? '₺${(total / 1000000).toStringAsFixed(1)}M' : '₺${total.toInt()}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                          ),
                         ),
                       ),
-                    )
-                  : Container(
-                      width: 140,
-                      height: 140,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.grey[200]!, width: 14),
-                      ),
                     ),
-                
-                // Center content badge
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: [Color(0xFF059669), Color(0xFF047857)]),
-                    borderRadius: BorderRadius.circular(18),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF059669).withOpacity(0.25),
-                        blurRadius: 6,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      total >= 1000000 ? '₺${(total / 1000000).toStringAsFixed(1)}M' : '₺${total.toInt()}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
-                      ),
-                    ),
-                  ),
+                  ],
                 ),
-                // Percentage labels moved to stats section
-              ],
-            ),
+              ),
+              const SizedBox(height: 8),
+              // Percentage badges below chart
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: AppColors.chartKiralama,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text('%$kiralamaPercent', style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                  ),
+                  const SizedBox(width: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: AppColors.chartSatis,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text('%$satisPercent', style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                  ),
+                ],
+              ),
+            ],
           ),
 
           const SizedBox(width: 20),
@@ -626,29 +655,47 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
   Widget _buildStatRowWithDetails(String label, double amount, int percent, int count, Color color) {
-    final isKiralama = color == AppColors.chartKiralama;
-    final bgColor = isKiralama ? const Color(0xFFFAF5FF) : const Color(0xFFF0FDFA);
-    final borderColor = isKiralama ? const Color(0xFFE9D5FF) : const Color(0xFFCCFBF1);
+    final isGider = label == 'Gider';
+    final isKiralama = label == 'Kiralama';
+    final isSatis = label == 'Satış';
+    
+    // Match accounting screen colors
+    Color bgColor;
+    Color borderColor;
+    Color amountColor;
+    
+    if (isGider) {
+      bgColor = const Color(0xFFFEF2F2);
+      borderColor = const Color(0xFFFECACA);
+      amountColor = const Color(0xFFDC2626);
+    } else if (isKiralama) {
+      bgColor = const Color(0xFFFAF5FF);
+      borderColor = const Color(0xFFE9D5FF);
+      amountColor = const Color(0xFF059669);
+    } else {
+      // Satış - cyan/teal
+      bgColor = const Color(0xFFF0FDFA);
+      borderColor = const Color(0xFFCCFBF1);
+      amountColor = const Color(0xFF059669);
+    }
     
     // Format amount for display - full numbers with thousand separators
-    String formattedAmount;
-    final intAmount = amount.toInt();
-    if (intAmount >= 1000) {
-      // Add thousand separator
-      final parts = <String>[];
-      String numStr = intAmount.toString();
-      while (numStr.length > 3) {
-        parts.insert(0, numStr.substring(numStr.length - 3));
-        numStr = numStr.substring(0, numStr.length - 3);
+    String formatNumber(int num) {
+      if (num >= 1000) {
+        final parts = <String>[];
+        String numStr = num.toString();
+        while (numStr.length > 3) {
+          parts.insert(0, numStr.substring(numStr.length - 3));
+          numStr = numStr.substring(0, numStr.length - 3);
+        }
+        parts.insert(0, numStr);
+        return parts.join('.');
       }
-      parts.insert(0, numStr);
-      formattedAmount = '₺${parts.join('.')}';
-    } else {
-      formattedAmount = '₺$intAmount';
+      return num.toString();
     }
     
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(10),
@@ -656,40 +703,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       child: Row(
         children: [
-          Container(width: 10, height: 10, decoration: BoxDecoration(shape: BoxShape.circle, color: color)),
-          const SizedBox(width: 10),
+          Container(width: 8, height: 8, decoration: BoxDecoration(shape: BoxShape.circle, color: color)),
+          const SizedBox(width: 8),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Row 1: Label + Percent badge
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      label,
-                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12, color: Color(0xFF374151)),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(4)),
-                      child: Text('%$percent', style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                // Row 2: Amount
-                Text(
-                  '+$formattedAmount',
-                  style: const TextStyle(color: Color(0xFF059669), fontWeight: FontWeight.bold, fontSize: 15),
-                ),
+                // Label row
+                Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: Color(0xFF374151))),
                 const SizedBox(height: 2),
-                // Row 3: Count
+                // Amount row
                 Text(
-                  '$count adet',
-                  style: TextStyle(color: color.withOpacity(0.8), fontSize: 11, fontWeight: FontWeight.w500),
+                  '${isGider ? '-' : '+'}₺${formatNumber(amount.toInt())}',
+                  style: TextStyle(color: amountColor, fontWeight: FontWeight.bold, fontSize: 16),
                 ),
+                // Count row
+                Text('$count adet', style: TextStyle(color: Colors.grey[600], fontSize: 12, fontWeight: FontWeight.w500)),
               ],
             ),
           ),

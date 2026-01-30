@@ -3388,16 +3388,18 @@ class _ProductsScreenState extends State<ProductsScreen> {
               ),
               const SizedBox(height: 16),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
                   color: AppColors.surfaceVariant,
                   borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.border),
                 ),
                 child: TextField(
                   controller: nameController,
                   decoration: const InputDecoration(
                     border: InputBorder.none,
                     hintText: 'Kategori adı...',
+                    isDense: true,
+                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   ),
                 ),
               ),
