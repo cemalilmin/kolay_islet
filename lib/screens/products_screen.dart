@@ -146,20 +146,29 @@ class _ProductsScreenState extends State<ProductsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: Column(
-        children: [
-          // Header
-          _buildHeader(),
+    return PopScope(
+      canPop: _selectedCategoryId == null, // Only allow pop if on categories
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && _selectedCategoryId != null) {
+          // Back from products to categories
+          setState(() => _selectedCategoryId = null);
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        body: Column(
+          children: [
+            // Header
+            _buildHeader(),
 
-          // Content
-          Expanded(
-            child: _selectedCategoryId == null
-                ? _buildCategoryGrid()
-                : _buildProductGrid(),
-          ),
-        ],
+            // Content
+            Expanded(
+              child: _selectedCategoryId == null
+                  ? _buildCategoryGrid()
+                  : _buildProductGrid(),
+            ),
+          ],
+        ),
       ),
     );
   }

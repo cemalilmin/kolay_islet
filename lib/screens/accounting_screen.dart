@@ -1166,14 +1166,21 @@ class _AccountingScreenState extends State<AccountingScreen> {
     required Color borderColor,
     required bool isIncome,
   }) {
-    // Format amount for display
+    // Format amount for display - full numbers with thousand separators
     String formattedAmount;
-    if (amount >= 1000000) {
-      formattedAmount = '₺${(amount / 1000000).toStringAsFixed(1)}M';
-    } else if (amount >= 1000) {
-      formattedAmount = '₺${(amount / 1000).toStringAsFixed(1)}K';
+    final intAmount = amount.toInt();
+    if (intAmount >= 1000) {
+      // Add thousand separator
+      final parts = <String>[];
+      String numStr = intAmount.toString();
+      while (numStr.length > 3) {
+        parts.insert(0, numStr.substring(numStr.length - 3));
+        numStr = numStr.substring(0, numStr.length - 3);
+      }
+      parts.insert(0, numStr);
+      formattedAmount = '₺${parts.join('.')}';
     } else {
-      formattedAmount = '₺${amount.toInt()}';
+      formattedAmount = '₺$intAmount';
     }
     
     return Container(
