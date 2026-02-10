@@ -343,7 +343,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     ),
                   ),
                   Text(
-                    '/ay',
+                    '/ay fatura',
                     style: TextStyle(
                       fontSize: 13,
                       color: Colors.grey[600],
@@ -385,18 +385,26 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        '₺799',
+                        '₺9.588',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 28,
+                          fontSize: 24,
                           color: _isYearlyPlan ? const Color(0xFFDC2626) : Colors.grey[800],
                         ),
                       ),
                       Text(
-                        '/ay',
+                        '/yıl fatura',
                         style: TextStyle(
                           fontSize: 13,
                           color: Colors.grey[600],
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '(₺799/ay)',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey[500],
                         ),
                       ),
                     ],
@@ -431,8 +439,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   }
 
   Widget _buildSelectedPlanCard() {
-    final price = _isYearlyPlan ? '799' : '999';
-    final period = _isYearlyPlan ? 'ay (yıllık ödeme: ₺9.588)' : 'ay';
+    final price = _isYearlyPlan ? '9.588' : '999';
+    final period = _isYearlyPlan ? 'yıl' : 'ay';
     
     return Container(
       width: double.infinity,
@@ -483,7 +491,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           
           const SizedBox(height: 20),
           
-          // Price
+          // Price - billed amount most prominent
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -500,29 +508,41 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                 price,
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 56,
+                  fontSize: 48,
                   fontWeight: FontWeight.bold,
                   height: 1,
                 ),
               ),
-              Text(
-                '/$period',
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.8),
-                  fontSize: 14,
-                ),
-              ),
             ],
           ),
+          const SizedBox(height: 4),
+          Text(
+            '/$period fatura tutarı',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.9),
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          if (_isYearlyPlan) ...[
+            const SizedBox(height: 4),
+            Text(
+              '(aylık ₺799)',
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.6),
+                fontSize: 13,
+              ),
+            ),
+          ],
           
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           
           Text(
-            'İlk 30 gün ücretsiz!',
+            'İlk 30 gün ücretsiz deneme',
             style: TextStyle(
               color: Colors.amber[300],
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
             ),
           ),
           
