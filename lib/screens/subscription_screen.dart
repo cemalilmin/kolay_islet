@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
+import '../services/revenue_cat_service.dart';
 
 class SubscriptionScreen extends StatefulWidget {
   const SubscriptionScreen({super.key});
@@ -14,54 +16,123 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   bool _hasActiveSubscription = false;
   DateTime? _trialEndDate;
   bool _isYearlyPlan = true; // Default to yearly for best value
+  List<Package> _packages = [];
   
   @override
   void initState() {
     super.initState();
     _checkSubscriptionStatus();
+    _loadPackages();
   }
   
   Future<void> _checkSubscriptionStatus() async {
-    // TODO: RevenueCat'ten abonelik durumu kontrol edilecek
-    setState(() {
-      _hasActiveSubscription = false;
-      _trialEndDate = null;
-    });
+    final isPremium = await RevenueCatService().isPremium();
+    if (mounted) {
+      setState(() {
+        _hasActiveSubscription = isPremium;
+      });
+    }
+  }
+  
+  Future<void> _loadPackages() async {
+    final packages = await RevenueCatService().getPackages();
+    if (mounted) {
+      setState(() {
+        _packages = packages;
+      });
+    }
   }
   
   Future<void> _startFreeTrial() async {
     setState(() => _isLoading = true);
     
-    // TODO: RevenueCat ile ücretsiz deneme başlatılacak
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      // Find the appropriate package
+      Package? selectedPackage;
+      for (final pkg in _packages) {
+        if (_isYearlyPlan && pkg.packageType == PackageType.annual) {
+          selectedPackage = pkg;
+          break;
+        } else if (!_isYearlyPlan && pkg.packageType == PackageType.monthly) {
+          selectedPackage = pkg;
+          break;
+        }
+      }
+      
+      // If no specific package found, use first available
+      selectedPackage ??= _packages.isNotEmpty ? _packages.first : null;
+      
+      if (selectedPackage != null) {
+        final success = await RevenueCatService().purchasePackage(selectedPackage);
+        
+        if (success && mounted) {
+          setState(() => _hasActiveSubscription = true);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Row(
+                children: [
+                  Icon(Icons.check_circle, color: Colors.white),
+                  SizedBox(width: 10),
+                  Text('Abonelik başarıyla aktifleştirildi!'),
+                ],
+              ),
+              backgroundColor: AppColors.success,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Abonelik paketleri yüklenemedi. Lütfen tekrar deneyin.'),
+              backgroundColor: Colors.red,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Purchase error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Satın alma iptal edildi veya bir hata oluştu.'),
+            backgroundColor: Colors.orange,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
+    }
     
-    setState(() => _isLoading = false);
+    if (mounted) setState(() => _isLoading = false);
+  }
+  
+  Future<void> _restorePurchases() async {
+    setState(() => _isLoading = true);
+    
+    final success = await RevenueCatService().restorePurchases();
     
     if (mounted) {
+      setState(() {
+        _hasActiveSubscription = success;
+        _isLoading = false;
+      });
+      
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Row(
-            children: [
-              Icon(Icons.check_circle, color: Colors.white),
-              SizedBox(width: 10),
-              Text('30 günlük ücretsiz deneme başladı!'),
-            ],
-          ),
-          backgroundColor: AppColors.success,
+          content: Text(success 
+            ? 'Aboneliğiniz başarıyla geri yüklendi!' 
+            : 'Aktif abonelik bulunamadı.'),
+          backgroundColor: success ? AppColors.success : Colors.orange,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
     }
-  }
-  
-  Future<void> _subscribe() async {
-    setState(() => _isLoading = true);
-    
-    // TODO: RevenueCat ile abonelik satın alınacak
-    await Future.delayed(const Duration(seconds: 2));
-    
-    setState(() => _isLoading = false);
   }
 
   @override
@@ -385,7 +456,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        '₺9.588',
+                        '₺9.599',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 24,
@@ -439,7 +510,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   }
 
   Widget _buildSelectedPlanCard() {
-    final price = _isYearlyPlan ? '9.588' : '999';
+    final price = _isYearlyPlan ? '9.599' : '999';
     final period = _isYearlyPlan ? 'yıl' : 'ay';
     
     return Container(
@@ -604,6 +675,22 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             style: TextStyle(
               color: Colors.white.withOpacity(0.7),
               fontSize: 13,
+            ),
+          ),
+          
+          const SizedBox(height: 12),
+          
+          // Restore Purchases button (Apple requirement)
+          GestureDetector(
+            onTap: _isLoading ? null : _restorePurchases,
+            child: Text(
+              'Satın Almaları Geri Yükle',
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.8),
+                fontSize: 13,
+                decoration: TextDecoration.underline,
+                decorationColor: Colors.white.withOpacity(0.5),
+              ),
             ),
           ),
         ],

@@ -49,6 +49,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   intl: any
+  purchases_flutter: ^9.12.0
 
 dev_dependencies:
   flutter_test:

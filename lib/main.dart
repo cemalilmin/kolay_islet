@@ -11,6 +11,7 @@ import 'widgets/auth_wrapper.dart';
 import 'config/supabase_config.dart';
 import 'services/settings_service.dart';
 import 'services/notification_service.dart';
+import 'services/revenue_cat_service.dart';
 import 'services/review_service.dart';
 
 // Global navigator key for notification navigation
@@ -66,6 +67,13 @@ void main() async {
     await ReviewService().init();
   } catch (e) {
     print('DEBUG: Failed to initialize ReviewService: $e');
+  }
+  
+  // Initialize RevenueCat subscription service
+  try {
+    await RevenueCatService().init();
+  } catch (e) {
+    print('DEBUG: Failed to initialize RevenueCat: $e');
   }
   
   // Set up notification tap handler
