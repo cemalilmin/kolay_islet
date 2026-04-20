@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../screens/login_screen.dart';
+import '../screens/auth_landing_screen.dart';
 import '../screens/onboarding_screen.dart';
 import '../services/data_service.dart';
 import '../main.dart';
@@ -176,7 +176,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
     if (_isLoggedIn) {
       return MainLayout(key: mainLayoutKey);
     } else {
-      return const LoginScreen();
+      return const AuthLandingScreen();
     }
   }
 }

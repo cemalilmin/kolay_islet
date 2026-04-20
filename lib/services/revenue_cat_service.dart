@@ -10,7 +10,7 @@ class RevenueCatService {
   RevenueCatService._internal();
 
   // RevenueCat API Keys
-  static const String _appleApiKey = 'test_hLJmIYSNWvezwD0ksUdDp0coJnk';
+  static const String _appleApiKey = 'appl_EXYqTMhhDOaDtKyGhGXJbmMClMz';
   // TODO: Google Play API key eklenecek
   static const String _googleApiKey = 'goog_api_key_placeholder';
 
@@ -19,7 +19,7 @@ class RevenueCatService {
   static const String yearlyProductId = 'kolayislet_yearly';
 
   // Entitlement ID
-  static const String premiumEntitlement = 'premium';
+  static const String premiumEntitlement = 'Kolay İşlet Pro';
 
   bool _isInitialized = false;
 
